@@ -1395,7 +1395,9 @@ function buildChart(svg, w, mode, selectedSku, opts = {}) {
   const seriesRsv = secondaryRaw.map(p => scaleVal(p) * skuShare);
   const hasMax = w.maxPlt != null;
   const maxLineBase = hasMax ? scaleVal(w.maxPlt) : 0;
-  const showMax = hasMax && !selectedSku;   // no ceiling line in count-only mode
+  // No ceiling line in count-only mode, when a single SKU is filtered, or in
+  // Value mode (capacity is a pallet ceiling — a $-converted "max" is misleading).
+  const showMax = hasMax && !selectedSku && !useValue;
   const maxLine = maxLineBase;
   const drawReservesLine = !singleCurve;
 
@@ -1945,11 +1947,12 @@ function render() {
     const srLabel = root.querySelector('[data-action="toggle-sr"]');
     const srWrap = srLabel ? srLabel.closest('.m3-checkbox') : null;
     if (srWrap) srWrap.style.display = hasMax ? '' : 'none';
-    // Hide the "Max …" legend item when there's no ceiling
+    // Hide the "Max …" legend item when there's no ceiling, or in Value mode
+    // (the max line is suppressed there, so the legend would be orphaned)
     const maxLegendEl = root.querySelector('[data-bind="max-legend"]');
     if (maxLegendEl) {
       const legendItem = maxLegendEl.closest('span');
-      if (legendItem) legendItem.style.display = hasMax ? '' : 'none';
+      if (legendItem) legendItem.style.display = (hasMax && !useValue) ? '' : 'none';
     }
   }
 
