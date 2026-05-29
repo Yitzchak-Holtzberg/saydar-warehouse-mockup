@@ -1,0 +1,2305 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Warehouse Capacity — M3 Layout (interactive)</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Noto+Sans:wght@300..700&family=Noto+Sans+Mono:wght@400..600&display=swap" rel="stylesheet">
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Rounded:opsz,wght,FILL,GRAD@20..48,300..700,0..1,-50..200&display=swap" rel="stylesheet">
+
+<style>
+  :root {
+    --md-sys-color-primary: #00696D;
+    --md-sys-color-on-primary: #FFFFFF;
+    --md-sys-color-primary-container: #6FF6FB;
+    --md-sys-color-on-primary-container: #002021;
+    --md-sys-color-secondary-container: #CCE8E7;
+    --md-sys-color-on-secondary-container: #051F1F;
+    --md-sys-color-surface: #F4FAFA;
+    --md-sys-color-surface-container-low: #EEF4F4;
+    --md-sys-color-surface-container-high: #E2E8E8;
+    --md-sys-color-on-surface: #171D1D;
+    --md-sys-color-on-surface-variant: #3F4949;
+    --md-sys-color-outline: #6F7979;
+    --md-sys-color-outline-variant: #BEC8C8;
+    --md-warn: #B95F1A;
+    --md-shadow-1: 0px 1px 2px rgba(0,0,0,0.15), 0px 1px 3px 1px rgba(0,0,0,0.08);
+    --md-shadow-2: 0px 1px 2px rgba(0,0,0,0.30), 0px 2px 6px 2px rgba(0,0,0,0.15);
+    --md-shadow-toolbar: 0px 2px 4px rgba(0,0,0,0.12), 0px 4px 5px rgba(0,0,0,0.08);
+    --shell-toolbar-bg: #FFFFFF;
+    --shell-sidenav-bg: rgb(15, 23, 42);
+    --shell-content-bg: #F1F3F4;
+    --font-body: 'Noto Sans', system-ui, sans-serif;
+    --font-mono: 'Noto Sans Mono', monospace;
+  }
+
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+  html, body { background: var(--shell-content-bg); min-height: 100%; }
+  body {
+    font-family: var(--font-body);
+    color: var(--md-sys-color-on-surface);
+    -webkit-font-smoothing: antialiased;
+  }
+
+  .material-symbols-rounded {
+    font-family: 'Material Symbols Rounded';
+    font-weight: 400; font-size: 24px; line-height: 1;
+    display: inline-block; white-space: nowrap;
+    font-variation-settings: 'FILL' 0, 'wght' 400, 'GRAD' 0, 'opsz' 24;
+    vertical-align: middle;
+  }
+  .icon-sm { font-size: 18px; }
+  .icon-lg { font-size: 36px; }
+
+  /* ─── Saydar shell ─── */
+  .shell { display: flex; flex-direction: column; height: 100vh; overflow: hidden; }
+  .shell-toolbar {
+    height: 56px; flex-shrink: 0;
+    background: var(--shell-toolbar-bg);
+    color: rgba(0,0,0,0.74);
+    display: flex; align-items: center;
+    padding: 0 8px;
+    box-shadow: var(--md-shadow-toolbar);
+    z-index: 5; position: relative;
+  }
+  .shell-toolbar button {
+    width: 40px; height: 40px; border-radius: 50%;
+    border: 0; background: transparent;
+    color: rgba(0,0,0,0.74); cursor: pointer;
+    display: inline-flex; align-items: center; justify-content: center;
+    position: relative;
+  }
+  .shell-toolbar button:hover { background: rgba(0,0,0,0.04); }
+  .shell-toolbar .logo {
+    height: 32px; padding: 0 12px;
+    display: flex; align-items: center;
+    color: var(--md-sys-color-primary);
+    font-weight: 600; font-size: 20px; letter-spacing: -0.01em;
+  }
+  .shell-toolbar .spacer { flex-grow: 1; }
+  .shell-toolbar .sub-badge {
+    height: 32px; padding: 0 12px;
+    border: 1px solid rgba(0,0,0,0.12);
+    border-radius: 16px;
+    display: inline-flex; align-items: center; gap: 8px;
+    font-size: 13px; color: rgba(0,0,0,0.74); font-weight: 500;
+    margin-right: 8px;
+  }
+  .shell-toolbar .sub-badge .material-symbols-rounded { font-size: 18px; }
+  .shell-toolbar .avatar {
+    width: 32px; height: 32px; border-radius: 50%;
+    background: linear-gradient(135deg, #00696D 0%, #4A6363 100%);
+    color: #fff;
+    display: inline-flex; align-items: center; justify-content: center;
+    font-size: 12px; font-weight: 500;
+    margin: 0 8px;
+  }
+  .shell-toolbar .badge-dot {
+    position: absolute; top: 8px; right: 8px;
+    width: 8px; height: 8px; border-radius: 50%;
+    background: #c43d20;
+  }
+  .shell-body { display: flex; flex-grow: 1; min-height: 0; }
+  .shell-sidenav {
+    width: 56px; flex-shrink: 0;
+    background: var(--shell-sidenav-bg);
+    padding: 4px 0 60px;
+    z-index: 2;
+    overflow: hidden;
+    box-shadow: 2px 0 8px rgba(0,0,0,0.15);
+  }
+  .shell-sidenav:hover { overflow-y: auto; }
+  .shell-sidenav::-webkit-scrollbar { width: 4px; }
+  .shell-sidenav::-webkit-scrollbar-thumb { background: rgba(255,255,255,0.15); border-radius: 2px; }
+  .shell-sidenav .pin-row {
+    height: 40px; display: flex; justify-content: flex-end;
+    padding-right: 4px; margin-bottom: 4px;
+  }
+  .shell-sidenav .pin-row button {
+    width: 32px; height: 32px; border-radius: 50%;
+    border: 0; background: transparent;
+    color: rgba(255,255,255,0.5);
+    cursor: pointer;
+    display: inline-flex; align-items: center; justify-content: center;
+  }
+  .shell-sidenav .pin-row button:hover { background: rgba(255,255,255,0.08); color: rgba(255,255,255,0.8); }
+  .shell-sidenav .nav-link {
+    height: 48px; width: 100%;
+    display: flex; align-items: center; justify-content: center;
+    color: rgba(255,255,255,0.7);
+    cursor: pointer; position: relative;
+    transition: background 120ms ease, color 120ms ease;
+  }
+  .shell-sidenav .nav-link:hover {
+    background: rgba(255,255,255,0.06);
+    color: rgba(255,255,255,1);
+  }
+  .shell-sidenav .nav-link.active {
+    color: #6FF6FB;
+    background: rgba(111,246,251,0.10);
+  }
+  .shell-sidenav .nav-link.active::before {
+    content: ''; position: absolute; left: 0; top: 6px; bottom: 6px;
+    width: 3px; border-radius: 0 2px 2px 0;
+    background: #6FF6FB;
+  }
+  .shell-sidenav .nav-link.active .material-symbols-rounded {
+    font-variation-settings: 'FILL' 1, 'wght' 500;
+  }
+  .shell-sidenav .nav-link .material-symbols-rounded { font-size: 22px; }
+  .shell-content {
+    flex-grow: 1; min-width: 0;
+    background: var(--shell-content-bg);
+    overflow: auto;
+  }
+
+  /* ─── M3 page content ─── */
+  .m3-page { background: var(--shell-content-bg); min-height: 100%; }
+
+  .page-header {
+    padding: 20px 24px 16px;
+    display: flex; align-items: flex-end; justify-content: space-between;
+    gap: 16px; flex-wrap: wrap;
+  }
+  .page-header h2 {
+    font-size: 22px; font-weight: 500; line-height: 28px;
+    color: var(--md-sys-color-on-surface);
+  }
+  .page-header .sub {
+    font-size: 13px; color: var(--md-sys-color-on-surface-variant);
+    margin-top: 4px;
+    display: flex; gap: 12px; align-items: center; flex-wrap: wrap;
+  }
+  .page-header .sub b {
+    color: var(--md-sys-color-on-surface); font-weight: 500;
+    font-variant-numeric: tabular-nums;
+  }
+  .page-header-actions { display: flex; gap: 12px; align-items: center; }
+
+  /* Compact hero-style page header (Option C uses this) */
+  .page-header.as-card {
+    margin: 20px 24px 16px;
+    padding: 18px 24px;
+    background: var(--md-sys-color-primary);
+    color: var(--md-sys-color-on-primary);
+    border-radius: 14px;
+    align-items: center;
+    position: relative; overflow: hidden;
+  }
+  .page-header.as-card::after {
+    content: ''; position: absolute;
+    top: -60px; right: -60px;
+    width: 200px; height: 200px;
+    border-radius: 50%;
+    background: rgba(255,255,255,0.06);
+    pointer-events: none;
+  }
+  .page-header.as-card > * { position: relative; z-index: 1; }
+  .page-header.as-card h2 { color: inherit; }
+  .page-header.as-card h2 span { color: rgba(255,255,255,0.65) !important; }
+  .page-header.as-card .sub { color: rgba(255,255,255,0.78); }
+  .page-header.as-card .sub b { color: #fff; }
+  .page-header.as-card .m3-segmented {
+    border-color: rgba(255,255,255,0.28);
+  }
+  .page-header.as-card .m3-segmented button {
+    border-right-color: rgba(255,255,255,0.28);
+    color: rgba(255,255,255,0.85);
+  }
+  .page-header.as-card .m3-segmented button.selected {
+    background: rgba(255,255,255,0.18);
+    color: #fff;
+  }
+  .page-header.as-card .m3-segmented .material-symbols-rounded { color: inherit; }
+
+  /* ── M3 chip + dropdown menu ── */
+  .m3-chip-wrap { position: relative; }
+  .m3-chip {
+    height: 36px; padding: 0 16px;
+    background: transparent;
+    color: var(--md-sys-color-on-surface);
+    border: 1px solid var(--md-sys-color-outline-variant);
+    border-radius: 8px;
+    font-family: var(--font-body); font-size: 14px; font-weight: 500;
+    cursor: pointer;
+    display: inline-flex; align-items: center; gap: 8px;
+  }
+  .m3-chip:hover { background: rgba(63,73,73,0.06); }
+  .m3-chip .material-symbols-rounded { font-size: 18px; }
+  .m3-chip.active {
+    background: var(--md-sys-color-secondary-container);
+    border-color: transparent;
+    color: var(--md-sys-color-on-secondary-container);
+  }
+
+  .m3-menu {
+    position: absolute; top: calc(100% + 6px); right: 0;
+    background: var(--md-sys-color-surface);
+    border: 1px solid var(--md-sys-color-outline-variant);
+    border-radius: 8px;
+    box-shadow: var(--md-shadow-2);
+    min-width: 320px; padding: 0;
+    z-index: 100;
+    display: none;
+    max-height: 420px;
+    flex-direction: column;
+  }
+  .m3-menu.open { display: flex; }
+  .m3-menu-search {
+    padding: 10px 12px;
+    border-bottom: 1px solid var(--md-sys-color-outline-variant);
+    background: var(--md-sys-color-surface);
+    display: flex; align-items: center; gap: 8px;
+    position: sticky; top: 0; z-index: 2;
+  }
+  .m3-menu-search input {
+    flex-grow: 1; border: 0; background: transparent; outline: 0;
+    font-family: var(--font-body); font-size: 14px;
+    color: var(--md-sys-color-on-surface);
+    padding: 4px 0;
+  }
+  .m3-menu-search input::placeholder { color: var(--md-sys-color-on-surface-variant); }
+  .m3-menu-search .material-symbols-rounded { color: var(--md-sys-color-on-surface-variant); font-size: 18px; }
+  .m3-menu-items {
+    overflow-y: auto;
+    padding: 6px 0;
+  }
+  .m3-menu-empty {
+    padding: 16px; text-align: center;
+    color: var(--md-sys-color-on-surface-variant);
+    font-size: 13px;
+  }
+  .m3-menu-item {
+    padding: 10px 16px; cursor: pointer;
+    display: flex; align-items: center; gap: 12px;
+    color: var(--md-sys-color-on-surface);
+    transition: background 120ms ease;
+  }
+  .m3-menu-item:hover { background: rgba(0,105,109,0.06); }
+  .m3-menu-item.selected { background: var(--md-sys-color-secondary-container); }
+  .m3-menu-item .nm { flex-grow: 1; font-size: 14px; font-weight: 500; }
+  .m3-menu-item .cd {
+    font-family: var(--font-mono); font-size: 11px;
+    color: var(--md-sys-color-on-surface-variant);
+  }
+  .m3-menu-item .pct {
+    font-size: 12px; font-variant-numeric: tabular-nums;
+    color: var(--md-sys-color-on-surface-variant);
+  }
+
+  /* ── M3 segmented ── */
+  .m3-segmented {
+    display: inline-flex;
+    border: 1px solid var(--md-sys-color-outline);
+    border-radius: 18px; overflow: hidden; height: 36px;
+  }
+  .m3-segmented button {
+    height: 36px; padding: 0 16px;
+    background: transparent; border: 0;
+    border-right: 1px solid var(--md-sys-color-outline);
+    color: var(--md-sys-color-on-surface);
+    font-family: var(--font-body); font-size: 13px; font-weight: 500;
+    cursor: pointer;
+    display: inline-flex; align-items: center; gap: 6px;
+  }
+  .m3-segmented button:last-child { border-right: 0; }
+  .m3-segmented button.selected {
+    background: var(--md-sys-color-secondary-container);
+    color: var(--md-sys-color-on-secondary-container);
+  }
+  .m3-segmented .material-symbols-rounded { font-size: 18px; }
+  .m3-segmented.dense { height: 30px; }
+  .m3-segmented.dense button { height: 30px; padding: 0 12px; font-size: 12px; }
+  .m3-segmented.dense .material-symbols-rounded { font-size: 16px; }
+
+  /* Transaction type chip (By Date view) */
+  .txn-chip {
+    display: inline-block; padding: 2px 8px;
+    font-size: 10.5px; font-weight: 500;
+    border-radius: 99px; letter-spacing: 0.3px;
+    font-family: var(--font-mono);
+  }
+  .txn-chip.po { background: #DCEEFF; color: #003258; }
+  .txn-chip.so { background: #FFE0CC; color: #4A1F00; }
+  .txn-chip.sr { background: #F0DEFA; color: #321845; }
+  .txn-chip.cur { background: var(--md-sys-color-secondary-container); color: var(--md-sys-color-on-secondary-container); }
+
+  /* Table totals row */
+  .m3-table tfoot td {
+    padding: 12px 16px;
+    background: var(--md-sys-color-surface-container-high);
+    border-top: 2px solid var(--md-sys-color-outline-variant);
+    border-bottom: 0;
+    font-weight: 500;
+    font-size: 13px;
+    position: sticky; bottom: 0;
+  }
+  .m3-table tfoot td:first-child {
+    font-size: 11px; font-weight: 500; letter-spacing: 0.5px;
+    text-transform: uppercase;
+    color: var(--md-sys-color-on-surface-variant);
+  }
+
+  /* Chart hover tooltip */
+  .chart-card { position: relative; }
+  .chart-tooltip {
+    position: absolute; pointer-events: none;
+    background: rgba(20, 28, 28, 0.96);
+    color: #fff;
+    border-radius: 8px; padding: 10px 14px;
+    font-size: 12px; line-height: 1.5;
+    box-shadow: var(--md-shadow-2);
+    z-index: 10;
+    min-width: 160px;
+    transform: translate(-50%, -100%);
+    margin-top: -8px;
+    opacity: 0; transition: opacity 100ms ease;
+  }
+  .chart-tooltip.visible { opacity: 1; }
+  .chart-tooltip .ct-date {
+    font-family: var(--font-mono); font-size: 11px;
+    color: rgba(255,255,255,0.65);
+    margin-bottom: 6px;
+    letter-spacing: 0.4px;
+    text-transform: uppercase;
+  }
+  .chart-tooltip .ct-row {
+    display: flex; justify-content: space-between; gap: 16px;
+    font-variant-numeric: tabular-nums;
+  }
+  .chart-tooltip .ct-row .l { color: rgba(255,255,255,0.7); display: inline-flex; align-items: center; gap: 6px; }
+  .chart-tooltip .ct-row .l i { display: inline-block; width: 10px; height: 2px; }
+  .chart-tooltip .ct-row .l i.l1 { background: #6FF6FB; }
+  .chart-tooltip .ct-row .l i.l2 { background: #6FF6FB; opacity: 0.4; }
+  .chart-tooltip .ct-row .l i.l3 { background: var(--md-warn); }
+
+  /* M3 checkbox */
+  .m3-checkbox {
+    display: inline-flex; align-items: center; gap: 8px;
+    cursor: pointer;
+    font-size: 13px; font-weight: 500;
+    color: var(--md-sys-color-on-surface);
+    user-select: none;
+    padding: 6px 4px;
+  }
+  .m3-checkbox input {
+    appearance: none; -webkit-appearance: none;
+    width: 18px; height: 18px;
+    border: 2px solid var(--md-sys-color-on-surface-variant);
+    border-radius: 2px;
+    cursor: pointer; flex-shrink: 0;
+    position: relative;
+    transition: background 120ms ease, border-color 120ms ease;
+    margin: 0;
+  }
+  .m3-checkbox input:checked {
+    background: var(--md-sys-color-primary);
+    border-color: var(--md-sys-color-primary);
+  }
+  .m3-checkbox input:checked::after {
+    content: '';
+    position: absolute;
+    left: 4px; top: 0;
+    width: 4px; height: 9px;
+    border: solid #fff;
+    border-width: 0 2px 2px 0;
+    transform: rotate(45deg);
+  }
+  .m3-checkbox:hover input:not(:checked) {
+    border-color: var(--md-sys-color-on-surface);
+  }
+
+  /* Hero compact (Option E) — title row on top, content row below */
+  .hero-card.hero-card-compact {
+    display: flex; flex-direction: column;
+    align-items: stretch;
+    padding: 18px 28px 22px;
+    gap: 16px;
+    grid-template-columns: none;
+    overflow: visible;   /* let the SKU dropdown spill outside the card */
+    background: var(--md-sys-color-primary);
+  }
+  /* disable the pseudo-element circles on the compact hero (they need overflow:hidden) */
+  .hero-card.hero-card-compact::before,
+  .hero-card.hero-card-compact::after { display: none; }
+  .hero-card-compact .hero-title-row {
+    display: flex; justify-content: space-between; align-items: center;
+    gap: 16px;
+    padding-bottom: 14px;
+    border-bottom: 1px solid rgba(255,255,255,0.18);
+    position: relative; z-index: 5;  /* must beat hero-content for dropdown menu */
+  }
+  .hero-card-compact .hero-title-row h2 {
+    color: inherit;
+    font-size: 22px; font-weight: 500;
+    margin: 0;
+    letter-spacing: 0.15px;
+    line-height: 1.2;
+  }
+  .hero-card-compact .hero-title-row h2 .wh-code {
+    color: rgba(255,255,255,0.55);
+    font-family: var(--font-mono);
+    font-size: 14px; font-weight: 400;
+    margin-left: 8px;
+  }
+  .hero-card-compact .hero-content {
+    display: grid; grid-template-columns: 1fr 1.55fr;
+    gap: 32px; align-items: center;
+    position: relative; z-index: 1;
+  }
+  .hero-card-compact .hero-headline {
+    font-size: 28px; line-height: 1.15;
+  }
+  .hero-card-compact .hero-stat { padding: 14px 18px; }
+  .hero-card-compact .hero-stat .v { font-size: 24px; }
+  .hero-card-compact .hero-stats { grid-template-columns: repeat(4, 1fr); }
+
+  /* ── Hero reflow on a narrow main column ──
+     Once the hero's own width drops below ~720px, the prose headline is
+     dropped (the 67% it states is already in the Utilization stat) and the
+     stat grid takes the full width. Below ~560px the 4-up row folds to 2×2
+     so the values stop clipping. */
+  @container (max-width: 720px) {
+    .hero-card-compact .hero-content { grid-template-columns: 1fr; }
+    .hero-card-compact .hero-left { display: none; }
+  }
+  @container (max-width: 560px) {
+    .hero-card-compact .hero-stats { grid-template-columns: repeat(2, 1fr); }
+  }
+
+  /* M3 chip restyled for hero (white-on-primary) */
+  .hero-card-compact .m3-chip {
+    background: rgba(255,255,255,0.12);
+    color: var(--md-sys-color-on-primary);
+    border-color: rgba(255,255,255,0.22);
+  }
+  .hero-card-compact .m3-chip:hover { background: rgba(255,255,255,0.18); }
+  .hero-card-compact .m3-chip .material-symbols-rounded { color: inherit; }
+  .hero-card-compact .m3-chip.sku-filter-active {
+    background: var(--md-sys-color-on-primary);
+    color: var(--md-sys-color-primary);
+    border-color: transparent;
+  }
+  .hero-card-compact .m3-chip.sku-filter-active .clear-x:hover {
+    background: rgba(0,0,0,0.08);
+  }
+
+  /* Chart head: stack controls when tight */
+  .chart-controls {
+    display: flex; align-items: center; gap: 16px; flex-wrap: wrap;
+  }
+
+  /* Option E — full-height master/detail (warehouse rail down the whole left) */
+  .opt-e-rail {
+    width: 280px; flex-shrink: 0;
+    background: var(--md-sys-color-surface-container-low);
+    border-right: 1px solid var(--md-sys-color-outline-variant);
+    padding: 16px 0;
+    overflow-y: auto;
+  }
+  .opt-e-rail::-webkit-scrollbar { width: 6px; }
+  .opt-e-rail::-webkit-scrollbar-thumb {
+    background: var(--md-sys-color-outline-variant); border-radius: 3px;
+  }
+  .opt-e-main { flex-grow: 1; min-width: 0; }
+  .opt-e-body {
+    padding: 16px 24px 24px;
+    container-type: inline-size;   /* hero reflows on its own width, not the viewport's */
+  }
+  /* Hero now spans the full width of the main column */
+  .opt-e-body .hero-card-compact { margin: 0 0 16px; }
+  .opt-e-sidebar-head {
+    padding: 4px 16px 10px;
+    font-size: 11px; font-weight: 500; letter-spacing: 0.5px;
+    text-transform: uppercase;
+    color: var(--md-sys-color-on-surface-variant);
+  }
+  .opt-e-section-label {
+    padding: 6px 16px 8px;
+    font-size: 11px; font-weight: 600; letter-spacing: 0.5px;
+    text-transform: uppercase;
+    color: var(--md-sys-color-primary);
+  }
+  .opt-e-section-label.other {
+    color: var(--md-sys-color-on-surface-variant);
+    margin-top: 8px;
+    border-top: 1px solid var(--md-sys-color-outline-variant);
+    padding-top: 14px;
+  }
+  .opt-c-list-item.muted {
+    opacity: 0.7;
+    border-left-color: transparent;
+  }
+  .opt-c-list-item.muted:hover { opacity: 1; }
+  .opt-c-list-item.muted.selected {
+    opacity: 1;
+    background: var(--md-sys-color-secondary-container);
+    border-left-color: var(--md-sys-color-outline);
+  }
+  .opt-c-list-item.muted .opt-c-list-item-name { font-weight: 400; }
+  .opt-e-other-hint {
+    font-size: 11px; font-style: italic;
+    color: var(--md-sys-color-on-surface-variant);
+    margin-top: 2px;
+  }
+  .opt-e-split {
+    display: grid; grid-template-columns: 1.55fr 1fr; gap: 16px;
+    min-width: 0;
+  }
+  .opt-e-split > * { min-width: 0; }
+
+  /* SKU filter chip - active state */
+  .m3-chip.sku-filter-active {
+    background: var(--md-sys-color-primary);
+    color: var(--md-sys-color-on-primary);
+    border-color: var(--md-sys-color-primary);
+  }
+  .m3-chip .clear-x { display: none; }
+  .m3-chip.sku-filter-active .chip-dd-arrow { display: none; }
+  .m3-chip.sku-filter-active .clear-x {
+    display: inline-flex; align-items: center; justify-content: center;
+    width: 22px; height: 22px;
+    margin-left: 4px; margin-right: -4px;
+    border-radius: 50%;
+  }
+  .m3-chip.sku-filter-active .clear-x:hover { background: rgba(255,255,255,0.18); }
+  .m3-chip.sku-filter-active .clear-x .material-symbols-rounded { font-size: 16px; }
+
+  /* Filter banner */
+  .filter-banner {
+    background: var(--md-sys-color-secondary-container);
+    color: var(--md-sys-color-on-secondary-container);
+    border-radius: 10px;
+    padding: 10px 14px;
+    margin: 0 24px 16px;
+    display: flex; align-items: center; gap: 10px;
+    font-size: 13px;
+    animation: fadeIn 200ms ease;
+  }
+  .filter-banner b { font-weight: 600; }
+  .filter-banner .material-symbols-rounded { color: inherit; font-size: 18px; }
+  .filter-banner .grow { flex-grow: 1; }
+  .filter-banner button {
+    background: transparent; border: 0;
+    color: var(--md-sys-color-on-secondary-container);
+    font-family: var(--font-body); font-size: 13px; font-weight: 500;
+    cursor: pointer;
+    display: inline-flex; align-items: center; gap: 6px;
+    padding: 6px 12px; border-radius: 14px;
+  }
+  .filter-banner button:hover { background: rgba(0,0,0,0.06); }
+  .filter-banner button .material-symbols-rounded { font-size: 16px; }
+  .txn-change-pos { color: #1B6F1B; font-weight: 500; }
+  .txn-change-neg { color: var(--md-warn); font-weight: 500; }
+
+  /* ── M3 card ── */
+  .m3-card {
+    background: var(--md-sys-color-surface-container-low);
+    border-radius: 12px;
+    box-shadow: var(--md-shadow-1);
+  }
+  .m3-card-head {
+    display: flex; justify-content: space-between; align-items: center;
+    padding: 16px 20px 8px;
+  }
+  .m3-card-head h3 {
+    font-size: 16px; font-weight: 500;
+    color: var(--md-sys-color-on-surface);
+  }
+
+  /* ── Chart ── */
+  .chart-wrap { padding: 4px 20px 16px; }
+  .chart-legend {
+    display: flex; gap: 18px; margin-bottom: 12px;
+    font-size: 12px; color: var(--md-sys-color-on-surface-variant);
+    flex-wrap: wrap;
+  }
+  .chart-legend span { display: inline-flex; align-items: center; gap: 6px; }
+  .chart-legend i { display: block; width: 14px; height: 2px; }
+  .chart-legend .l1 { background: var(--md-sys-color-primary); }
+  .chart-legend .l2 { background: var(--md-sys-color-primary); opacity: 0.4; }
+  .chart-legend .l3 { border-top: 1.5px dashed var(--md-warn); height: 0; width: 18px; }
+  .chart-x {
+    display: flex; justify-content: space-between;
+    padding-top: 6px; font-size: 11px;
+    color: var(--md-sys-color-on-surface-variant);
+    font-family: var(--font-mono);
+  }
+  .chart-x span {
+    transition: color 100ms ease, font-weight 100ms ease;
+    padding: 2px 4px; border-radius: 4px;
+  }
+  .chart-x span.active {
+    color: var(--md-sys-color-primary);
+    font-weight: 600;
+    background: var(--md-sys-color-secondary-container);
+  }
+  .chart-svg { width: 100%; height: auto; display: block; cursor: crosshair; }
+
+  /* SKU scroll container — keeps long table from blowing out side-by-side layout */
+  .sku-scroll {
+    max-height: 420px;
+    overflow-y: auto;
+    scrollbar-gutter: stable;
+  }
+  .sku-scroll::-webkit-scrollbar { width: 8px; }
+  .sku-scroll::-webkit-scrollbar-thumb { background: rgba(0,0,0,0.15); border-radius: 4px; }
+  .sku-scroll thead th {
+    position: sticky; top: 0;
+    background: var(--md-sys-color-surface-container-low);
+    z-index: 1;
+  }
+  .sku-summary {
+    padding: 12px 16px;
+    border-top: 1px solid var(--md-sys-color-outline-variant);
+    font-size: 12px; color: var(--md-sys-color-on-surface-variant);
+    display: flex; justify-content: space-between;
+    font-variant-numeric: tabular-nums;
+  }
+  .sku-summary b { color: var(--md-sys-color-on-surface); font-weight: 500; }
+
+  /* ── M3 table ── */
+  .m3-table { width: 100%; border-collapse: collapse; }
+  .m3-table th {
+    text-align: left; padding: 12px 16px;
+    font-size: 11px; font-weight: 500; letter-spacing: 0.5px;
+    color: var(--md-sys-color-on-surface-variant);
+    border-bottom: 1px solid var(--md-sys-color-outline-variant);
+    text-transform: uppercase;
+    cursor: pointer; user-select: none;
+  }
+  .m3-table th.num { text-align: right; }
+  .m3-table th:hover { color: var(--md-sys-color-primary); }
+  .m3-table th .sort-ind {
+    font-size: 14px; opacity: 0; margin-left: 4px;
+    vertical-align: middle;
+  }
+  .m3-table th.sorted .sort-ind { opacity: 1; color: var(--md-sys-color-primary); }
+  .m3-table td {
+    padding: 12px 16px;
+    border-bottom: 1px solid var(--md-sys-color-outline-variant);
+    font-size: 14px;
+  }
+  .m3-table td.num { text-align: right; font-variant-numeric: tabular-nums; }
+  .m3-table tbody tr { transition: background 120ms ease; cursor: pointer; }
+  .m3-table tbody tr:hover { background: rgba(0,105,109,0.05); }
+  .m3-table .sku-name { font-weight: 500; }
+  .m3-table .sku-code {
+    display: block; font-family: var(--font-mono); font-size: 11px;
+    color: var(--md-sys-color-on-surface-variant); margin-top: 2px;
+  }
+
+  /* ── Progress ── */
+  .m3-progress {
+    width: 100%; height: 4px;
+    background: var(--md-sys-color-primary-container);
+    border-radius: 2px; overflow: hidden;
+  }
+  .m3-progress i { display: block; height: 100%; background: var(--md-sys-color-primary); transition: width 320ms ease; }
+  .m3-progress.warn i { background: var(--md-warn); }
+
+  /* ── Switcher ── */
+  .switcher {
+    position: fixed; bottom: 16px; left: 50%; transform: translateX(-50%);
+    z-index: 1000; display: flex; gap: 4px;
+    background: var(--md-sys-color-surface-container-high);
+    border-radius: 28px; padding: 4px;
+    box-shadow: 0 8px 24px -6px rgba(0,0,0,0.25);
+  }
+  .switcher button {
+    background: transparent; border: 0;
+    color: var(--md-sys-color-on-surface-variant);
+    padding: 8px 16px; font-size: 13px; font-weight: 500;
+    border-radius: 28px; cursor: pointer;
+    font-family: var(--font-body);
+  }
+  .switcher button.active {
+    background: var(--md-sys-color-primary);
+    color: var(--md-sys-color-on-primary);
+  }
+  .switcher .num { font-family: var(--font-mono); font-size: 11px; opacity: 0.65; margin-right: 6px; }
+  .switcher button.active .num { opacity: 1; }
+
+  .opt { display: none; }
+  .opt.active { display: block; }
+  .opt-c.active, .opt-e.active { display: flex; min-height: 100%; }
+
+
+  /* ── Option A: side-by-side ── */
+  .opt-a-body { padding: 0 24px 24px; }
+  .opt-a-split {
+    display: grid; grid-template-columns: 1.5fr 1fr; gap: 16px;
+    min-width: 0;
+  }
+  .opt-a-split > * { min-width: 0; }
+
+  /* ── Option B: tabs ── */
+  .opt-b-body { padding: 0 24px 24px; }
+  .m3-tabs {
+    display: flex; gap: 0;
+    border-bottom: 1px solid var(--md-sys-color-outline-variant);
+    margin-bottom: 16px;
+  }
+  .m3-tab {
+    background: transparent; border: 0;
+    padding: 14px 16px 12px;
+    color: var(--md-sys-color-on-surface-variant);
+    font-family: var(--font-body); font-size: 14px; font-weight: 500;
+    cursor: pointer;
+    display: inline-flex; align-items: center; gap: 8px;
+    border-bottom: 2px solid transparent;
+    transition: color 160ms ease, border-color 160ms ease;
+  }
+  .m3-tab .material-symbols-rounded { font-size: 20px; }
+  .m3-tab.selected {
+    color: var(--md-sys-color-primary);
+    border-bottom-color: var(--md-sys-color-primary);
+  }
+  .m3-tab-panel { display: none; }
+  .m3-tab-panel.active { display: block; }
+
+  /* ── Option C: master/detail ── */
+  .opt-c-list {
+    width: 280px; flex-shrink: 0;
+    background: var(--md-sys-color-surface-container-low);
+    border-right: 1px solid var(--md-sys-color-outline-variant);
+    padding: 16px 0;
+    overflow-y: auto;
+  }
+  .opt-c-list-head {
+    padding: 4px 20px 12px;
+    font-size: 11px; font-weight: 500; letter-spacing: 0.5px;
+    text-transform: uppercase;
+    color: var(--md-sys-color-on-surface-variant);
+  }
+  .opt-c-list-item {
+    padding: 12px 20px; cursor: pointer;
+    border-left: 3px solid transparent;
+    transition: background 120ms ease;
+  }
+  .opt-c-list-item:hover { background: rgba(0,105,109,0.05); }
+  .opt-c-list-item.selected {
+    background: var(--md-sys-color-secondary-container);
+    border-left-color: var(--md-sys-color-primary);
+  }
+  .opt-c-list-item-top {
+    display: flex; justify-content: space-between; align-items: center;
+    margin-bottom: 4px;
+  }
+  .opt-c-list-item-name { font-size: 14px; font-weight: 500; }
+  .opt-c-list-item-code {
+    font-family: var(--font-mono); font-size: 11px;
+    color: var(--md-sys-color-on-surface-variant);
+  }
+  .opt-c-list-item-meta {
+    display: flex; justify-content: space-between; align-items: center;
+    font-size: 12px; color: var(--md-sys-color-on-surface-variant);
+    margin-bottom: 6px;
+  }
+  .opt-c-list-item-meta .pct {
+    font-weight: 500; color: var(--md-sys-color-on-surface);
+    font-variant-numeric: tabular-nums;
+  }
+  .opt-c-list-item-meta .pct.warn { color: var(--md-warn); }
+  .opt-c-list-sparkline { margin-top: 4px; }
+  .opt-c-main { flex-grow: 1; min-width: 0; }
+  .opt-c-body { padding: 0 24px 24px; }
+  .opt-c-split {
+    display: grid; grid-template-columns: 1.5fr 1fr; gap: 16px;
+    min-width: 0;
+  }
+  .opt-c-split > * { min-width: 0; }
+
+  /* ── Option D: Hero card ── */
+  .opt-d-body { padding: 0 24px 24px; }
+
+  .hero-card {
+    background: var(--md-sys-color-primary);
+    color: var(--md-sys-color-on-primary);
+    border-radius: 16px;
+    padding: 32px;
+    margin-bottom: 16px;
+    display: grid;
+    grid-template-columns: 1fr 1.05fr;
+    gap: 40px;
+    align-items: center;
+    position: relative; overflow: hidden;
+  }
+  .hero-card::after {
+    content: ''; position: absolute;
+    top: -120px; right: -120px;
+    width: 420px; height: 420px;
+    border-radius: 50%;
+    background: rgba(255,255,255,0.05);
+  }
+  .hero-card::before {
+    content: ''; position: absolute;
+    bottom: -80px; right: 120px;
+    width: 220px; height: 220px;
+    border-radius: 50%;
+    background: rgba(255,255,255,0.04);
+  }
+  .hero-left { position: relative; z-index: 1; }
+  .hero-eyebrow {
+    font-size: 12px; font-weight: 500; letter-spacing: 0.8px;
+    text-transform: uppercase; opacity: 0.85;
+    margin-bottom: 8px;
+    display: flex; align-items: center; gap: 8px;
+  }
+  .hero-eyebrow .pulse {
+    display: inline-block; width: 8px; height: 8px;
+    border-radius: 50%; background: #6FF6FB;
+    box-shadow: 0 0 0 0 rgba(111,246,251,0.7);
+    animation: pulse 2s infinite;
+  }
+  @keyframes pulse {
+    0% { box-shadow: 0 0 0 0 rgba(111,246,251,0.7); }
+    70% { box-shadow: 0 0 0 12px rgba(111,246,251,0); }
+    100% { box-shadow: 0 0 0 0 rgba(111,246,251,0); }
+  }
+  .hero-headline {
+    font-size: 38px; font-weight: 400; line-height: 1.1;
+    letter-spacing: -0.5px;
+  }
+  .hero-headline .em { color: #6FF6FB; font-weight: 500; }
+
+  .hero-right { position: relative; z-index: 1; }
+  .hero-stats {
+    display: grid; grid-template-columns: repeat(2, 1fr);
+    gap: 1px;
+    background: rgba(255,255,255,0.18);
+    border: 1px solid rgba(255,255,255,0.18);
+    border-radius: 12px; overflow: hidden;
+  }
+  .hero-stat { background: var(--md-sys-color-primary); padding: 18px 22px; }
+  .hero-stat .l {
+    font-size: 11px; font-weight: 500; letter-spacing: 0.5px;
+    text-transform: uppercase; opacity: 0.75; margin-bottom: 8px;
+  }
+  .hero-stat .v {
+    font-size: 30px; font-weight: 400; line-height: 1;
+    font-variant-numeric: tabular-nums;
+    letter-spacing: -0.5px;
+  }
+  .hero-stat .v .u { font-size: 14px; opacity: 0.65; margin-left: 2px; }
+  .hero-stat .s { font-size: 12px; opacity: 0.8; margin-top: 8px; }
+
+  .opt-d-split {
+    display: grid; grid-template-columns: 1.5fr 1fr; gap: 16px;
+    min-width: 0;
+  }
+  .opt-d-split > * { min-width: 0; }
+
+  /* fade-in for newly rendered content */
+  @keyframes fadeIn { from { opacity: 0.4; } to { opacity: 1; } }
+  .fade-in { animation: fadeIn 220ms ease; }
+</style>
+</head>
+<body>
+
+<div class="shell">
+
+  <header class="shell-toolbar">
+    <button title="Menu"><span class="material-symbols-rounded">menu</span></button>
+    <span class="logo">Saydar</span>
+    <span class="spacer"></span>
+    <span class="sub-badge">
+      <span class="material-symbols-rounded">domain</span>
+      Subsidiary 13000
+      <span class="material-symbols-rounded">arrow_drop_down</span>
+    </span>
+    <div class="avatar">YH</div>
+    <button title="Settings"><span class="material-symbols-rounded">settings</span></button>
+    <button title="Notifications">
+      <span class="material-symbols-rounded">notifications</span>
+      <span class="badge-dot"></span>
+    </button>
+    <button title="Help"><span class="material-symbols-rounded">help</span></button>
+    <button title="Docs"><span class="material-symbols-rounded">description</span></button>
+  </header>
+
+  <div class="shell-body">
+
+    <aside class="shell-sidenav">
+      <div class="pin-row">
+        <button title="Pin sidebar"><span class="material-symbols-rounded icon-sm">location_on</span></button>
+      </div>
+      <div class="nav-link" title="Requests"><span class="material-symbols-rounded">message</span></div>
+      <div class="nav-link" title="Purchasing"><span class="material-symbols-rounded">library_books</span></div>
+      <div class="nav-link" title="Products"><span class="material-symbols-rounded">local_mall</span></div>
+      <div class="nav-link" title="Vendors"><span class="material-symbols-rounded">precision_manufacturing</span></div>
+      <div class="nav-link" title="Customers"><span class="material-symbols-rounded">people</span></div>
+      <div class="nav-link" title="Timeline Management"><span class="material-symbols-rounded">hourglass_empty</span></div>
+      <div class="nav-link" title="Logistics"><span class="material-symbols-rounded">directions_boat</span></div>
+      <div class="nav-link active" title="Inventory"><span class="material-symbols-rounded">equalizer</span></div>
+      <div class="nav-link" title="Sales"><span class="material-symbols-rounded">receipt</span></div>
+      <div class="nav-link" title="Ecommerce"><span class="material-symbols-rounded">shopping_cart</span></div>
+      <div class="nav-link" title="Warehouse"><span class="material-symbols-rounded">warehouse</span></div>
+      <div class="nav-link" title="Returns"><span class="material-symbols-rounded">assignment_return</span></div>
+      <div class="nav-link" title="Inspections"><span class="material-symbols-rounded">search</span></div>
+      <div class="nav-link" title="Calendar"><span class="material-symbols-rounded">today</span></div>
+      <div class="nav-link" title="File Management"><span class="material-symbols-rounded">folder</span></div>
+      <div class="nav-link" title="Reports"><span class="material-symbols-rounded">assignment</span></div>
+      <div class="nav-link" title="EDI"><span class="material-symbols-rounded">swap_horiz</span></div>
+      <div class="nav-link" title="Sync Jobs"><span class="material-symbols-rounded">sync</span></div>
+    </aside>
+
+    <main class="shell-content">
+
+
+      <!-- ─────────── Option E: Refined (owned-warehouse sidebar + hero + SR checkbox) ─────────── -->
+      <section class="opt opt-e active" id="opt-e">
+
+        <aside class="opt-e-rail">
+          <div class="opt-e-sidebar-head">Warehouses</div>
+          <div data-bind="wh-list-owned"></div>
+        </aside>
+
+        <main class="opt-e-main">
+          <div class="m3-page">
+
+            <div data-bind="filter-banner"></div>
+
+            <div class="opt-e-body">
+
+              <!-- Hero (title + SKU filter chip live inside) -->
+              <div class="hero-card hero-card-compact">
+                <div class="hero-title-row">
+                  <h2><span data-bind="wh-name">—</span><span class="wh-code" data-bind="wh-code">—</span></h2>
+                  <div class="m3-chip-wrap">
+                    <button class="m3-chip" data-action="open-sku-menu">
+                      <span class="material-symbols-rounded">filter_alt</span>
+                      <span data-bind="sku-filter-label">All SKUs</span>
+                      <span class="material-symbols-rounded chip-dd-arrow">arrow_drop_down</span>
+                      <span class="clear-x" data-action="clear-sku-filter" title="Clear filter">
+                        <span class="material-symbols-rounded icon-sm">close</span>
+                      </span>
+                    </button>
+                    <div class="m3-menu" data-menu="sku"></div>
+                  </div>
+                </div>
+
+                <div class="hero-content">
+                  <div class="hero-left">
+                    <div class="hero-headline" data-bind="headline">—</div>
+                  </div>
+                  <div class="hero-right">
+                    <div class="hero-stats">
+                      <div class="hero-stat">
+                        <div class="l">Utilization</div>
+                        <div class="v"><span data-bind="util-pct">—</span></div>
+                        <div class="s">of capacity</div>
+                      </div>
+                      <div class="hero-stat">
+                        <div class="l">Units</div>
+                        <div class="v" data-bind="total-units">—</div>
+                        <div class="s"><span data-bind="sku-count">—</span> SKUs</div>
+                      </div>
+                      <div class="hero-stat">
+                        <div class="l">Pallets</div>
+                        <div class="v"><span data-bind="used-plt">—</span></div>
+                        <div class="s" data-bind="plt-sub">—</div>
+                      </div>
+                      <div class="hero-stat">
+                        <div class="l">Value</div>
+                        <div class="v" data-bind="total-value-short">—</div>
+                        <div class="s"><span data-bind="rate-per-plt">—</span>/plt</div>
+                      </div>
+                    </div>
+                  </div>
+                </div>
+              </div>
+
+              <div class="opt-e-split">
+
+                <!-- Chart card with internal Plt/Value toggle + SR checkbox -->
+                <div class="m3-card">
+                  <div class="m3-card-head">
+                    <h3>Used capacity over time</h3>
+                    <div class="chart-controls">
+                      <label class="m3-checkbox" title="Includes soft reserves in the curve">
+                        <input type="checkbox" data-action="toggle-sr" />
+                        <span>Projected capacity</span>
+                      </label>
+                      <div class="m3-segmented dense" data-action="toggle-mode">
+                        <button data-mode="plt" class="selected"><span class="material-symbols-rounded">inventory_2</span>Plt</button>
+                        <button data-mode="units"><span class="material-symbols-rounded">tag</span>Units</button>
+                        <button data-mode="value"><span class="material-symbols-rounded">payments</span>Value</button>
+                      </div>
+                    </div>
+                  </div>
+                  <div class="chart-wrap">
+                    <div class="chart-legend">
+                      <span><i class="l1"></i><span data-bind="curve-label">Used capacity</span></span>
+                      <span><i class="l3"></i><span data-bind="max-legend">Max —</span></span>
+                    </div>
+                    <svg class="chart-svg" viewBox="0 0 720 260" preserveAspectRatio="none" data-chart="E"></svg>
+                    <div class="chart-x" data-bind="chart-x"></div>
+                  </div>
+                </div>
+
+                <!-- SKU table -->
+                <div class="m3-card">
+                  <div class="m3-card-head">
+                    <h3 data-bind="breakdown-title">Breakdown</h3>
+                    <div class="m3-segmented dense" data-action="toggle-skuview">
+                      <button data-skuview="sku" class="selected"><span class="material-symbols-rounded">inventory_2</span>By SKU</button>
+                      <button data-skuview="day"><span class="material-symbols-rounded">calendar_view_day</span>By Day</button>
+                      <button data-skuview="date"><span class="material-symbols-rounded">event</span>By Txn</button>
+                    </div>
+                  </div>
+                <div class="sku-scroll" data-bind="breakdown-table"></div>
+                <div class="sku-summary" data-bind="breakdown-summary"></div>
+              </div>
+
+              </div>
+            </div>
+          </div>
+        </main>
+      </section>
+
+    </main>
+  </div>
+</div>
+
+
+<script>
+// ────────────────────────────────────────────────
+// DUMMY DATA — 4 warehouses with realistic numbers
+// SKU breakdown is generated to sum to warehouse totals.
+// ────────────────────────────────────────────────
+const WAREHOUSE_DEFS = [
+  {
+    code: 'WH-01', name: 'Northgate Storage', owned: true,
+    usedPlt: 1840, maxPlt: 3200, ratePerPallet: 1141,
+    series:    [1840,1880,1920,1980,2050,2120,2180,2240,2310,2370,2430,2500,2560],
+    seriesRsv: [1840,1920,2010,2110,2210,2300,2380,2470,2550,2620,2700,2780,2850],
+    // Small appliances theme
+    skuTemplates: [
+      { name: 'Coffee Grinder Pro',    code: 'CGN-220' },
+      { name: 'Toaster Oven 30L',      code: 'TST-30L' },
+      { name: 'Hand Mixer, 5-speed',   code: 'HMX-5SP' },
+      { name: 'Electric Kettle 1.7L',  code: 'KETT-ELC-1.7L' },
+      { name: 'Steam Iron, 1800W',     code: 'IRN-STM-1800' },
+      { name: 'Waffle Maker, 4-square', code: 'WFL-4SQ' },
+      { name: 'Hand Blender, 300W',    code: 'HBL-300W' },
+      { name: 'Rice Cooker, 10-cup',   code: 'RCK-10C' },
+      { name: 'Citrus Juicer',         code: 'JCR-CIT' },
+      { name: 'Indoor Grill, 4-burner', code: 'GRL-IND-4B' },
+      { name: 'Salad Spinner',         code: 'SLD-SPN' },
+      { name: 'Sandwich Press',        code: 'SDW-PRS' },
+      { name: 'Stick Mixer',           code: 'STK-MX-200' },
+      { name: 'Mini Chopper',          code: 'CHP-MINI' },
+      { name: 'Food Scale, Digital',   code: 'SCL-DIG' },
+      { name: 'Egg Cooker, 7-capacity', code: 'EGG-7C' },
+      { name: 'Popcorn Maker',         code: 'PCP-AIR' },
+      { name: 'Milk Frother',          code: 'MFR-AUTO' },
+    ],
+  },
+  {
+    code: 'BLF-04', name: 'Bloomfield Distribution', owned: true,
+    usedPlt: 3217, maxPlt: 4800, ratePerPallet: 1498,
+    series:    [3217,3320,3420,3530,3640,3740,3840,3930,4030,4120,4220,4320,4420],
+    seriesRsv: [3891,4020,4170,4330,4490,4640,4800,4940,5080,5210,5340,5460,5580],
+    // Mid-large kitchen
+    skuTemplates: [
+      { name: 'Microwave, 1.6 cu.ft.',   code: 'MIC-COUNT-1.6' },
+      { name: 'Air Fryer, 12L',          code: 'AIR-FRY-12L' },
+      { name: 'Stand Mixer, White',      code: 'KDM-2400-WHT' },
+      { name: 'Blender Pro, Black',      code: 'BLD-180-BLK' },
+      { name: '4-Slice Toaster, SS',     code: 'TST-4S-SS' },
+      { name: 'Food Processor, 14-cup',  code: 'FPR-14C' },
+      { name: 'Pressure Cooker, 8qt',    code: 'PRC-8QT' },
+      { name: 'Slow Cooker, 6qt',        code: 'SLC-6QT' },
+      { name: 'Rice Cooker, 10-cup',     code: 'RCK-10C' },
+      { name: 'Stand Mixer, Red',        code: 'KDM-2400-RED' },
+      { name: 'Espresso Machine, 15-bar', code: 'ESP-15B' },
+      { name: 'Drip Coffee Maker, 12c',  code: 'CFM-12C' },
+      { name: 'Electric Skillet, 12"',   code: 'SKL-12IN' },
+      { name: 'Indoor Grill, Reversible', code: 'GRL-IND-RV' },
+      { name: 'Hand Blender, 600W',      code: 'HBL-600W' },
+      { name: 'Coffee Grinder, Burr',    code: 'CGN-BUR' },
+      { name: 'Juicer, Centrifugal',     code: 'JCR-CTR' },
+      { name: 'Waffle Maker, Belgian',   code: 'WFL-BEL' },
+    ],
+  },
+  {
+    code: 'WH-02', name: 'Riverside Hub', owned: false,
+    usedPlt: 2340, maxPlt: 2800, ratePerPallet: 1496,
+    series:    [2340,2380,2430,2470,2520,2570,2620,2670,2720,2760,2790,2820,2850],
+    seriesRsv: [2610,2680,2760,2830,2900,2970,3030,3090,3150,3200,3240,3280,3310],
+    // Large appliances theme
+    skuTemplates: [
+      { name: 'Refrigerator, 20 cu.ft.', code: 'REF-COMP-20' },
+      { name: 'Dishwasher, 24"',         code: 'DW-24-SS' },
+      { name: 'Range, Gas 30"',          code: 'RNG-GAS-30' },
+      { name: 'Microwave OTR, 1.7cf',    code: 'MIC-OTR-1.7' },
+      { name: 'Refrigerator, 26 cu.ft.', code: 'REF-FD-26' },
+      { name: 'Range, Electric 30"',     code: 'RNG-ELC-30' },
+      { name: 'Wall Oven, Single 30"',   code: 'OVN-SGL-30' },
+      { name: 'Cooktop, Induction 36"',  code: 'CKT-IND-36' },
+      { name: 'Dishwasher, Panel-Ready', code: 'DW-24-PR' },
+      { name: 'Range Hood, 36"',         code: 'HDV-36' },
+      { name: 'Microwave Drawer, 24"',   code: 'MIC-DRW-24' },
+      { name: 'Wine Cooler, 24-bottle',  code: 'WNC-24B' },
+      { name: 'Beverage Center, 24"',    code: 'BVC-24' },
+      { name: 'Ice Maker, U/C 15"',      code: 'ICE-UC-15' },
+      { name: 'Freezer, Upright 18cf',   code: 'FZR-UR-18' },
+      { name: 'Coffee Maker, 12c',       code: 'COFF-12C' },
+    ],
+  },
+  {
+    code: 'WH-03', name: 'Sundown Logistics', owned: false,
+    usedPlt: 980, maxPlt: 3600, ratePerPallet: 1224,
+    series:    [980,1020,1060,1100,1150,1200,1260,1310,1360,1420,1470,1530,1590],
+    seriesRsv: [1140,1210,1280,1360,1430,1510,1590,1670,1740,1820,1900,1980,2060],
+    // Climate / home environment theme
+    skuTemplates: [
+      { name: 'Air Purifier, HEPA 300sf', code: 'APR-HEPA-300' },
+      { name: 'Humidifier, 4L',          code: 'HUM-4L' },
+      { name: 'Dehumidifier, 30 pint',   code: 'DEH-30PT' },
+      { name: 'Space Heater, 1500W',     code: 'HTR-1500W' },
+      { name: 'Fan, Tower 42"',          code: 'FAN-TWR-42' },
+      { name: 'Air Purifier, HEPA 600sf', code: 'APR-HEPA-600' },
+      { name: 'Pedestal Fan, 18"',       code: 'FAN-PED-18' },
+      { name: 'Ceramic Heater, 1500W',   code: 'HTR-CRM-1500' },
+      { name: 'Oil Filled Radiator',     code: 'HTR-OIL-RAD' },
+      { name: 'Window AC, 8000 BTU',     code: 'AC-WIN-8K' },
+      { name: 'Portable AC, 12000 BTU',  code: 'AC-PRT-12K' },
+      { name: 'Air Quality Monitor',     code: 'AQM-MULTI' },
+      { name: 'Bladeless Fan',           code: 'FAN-BLD' },
+      { name: 'Ultrasonic Humidifier',   code: 'HUM-US-3L' },
+      { name: 'Whole-house Filter Set',  code: 'FLT-WHM-SET' },
+    ],
+  },
+];
+
+// Generate SKU distribution so that plt sums == usedPlt and value sums == totalValue.
+function generateSkus(templates, totalPlt, baseRate) {
+  const n = templates.length;
+  const targetValue = totalPlt * baseRate;
+
+  // Pareto-like plt distribution
+  const weights = Array.from({length: n}, (_, i) => Math.pow(1 / (i + 1), 0.62));
+  const wSum = weights.reduce((a, b) => a + b, 0);
+  const plts = weights.map(w => Math.max(1, Math.round((w / wSum) * totalPlt)));
+  // Adjust top item to match total exactly
+  plts[0] += totalPlt - plts.reduce((a, b) => a + b, 0);
+
+  // Value: top SKUs have higher $/plt (heavier, premium items)
+  const rawVals = plts.map((p, i) => {
+    const variance = 1.55 - (i / n) * 1.10;  // 1.55 → 0.45
+    return p * baseRate * variance;
+  });
+  const rvSum = rawVals.reduce((a, b) => a + b, 0);
+  const scale = targetValue / rvSum;
+  const values = rawVals.map(v => Math.round(v * scale));
+  values[0] += targetValue - values.reduce((a, b) => a + b, 0);
+
+  return templates.map((t, i) => {
+    // units per pallet: bigger items at top → fewer units/plt; smaller at bottom → more
+    const uPerPlt = Math.max(1, Math.round(1 + (i / n) * 80));
+    return {
+      name: t.name, code: t.code,
+      plt: plts[i], value: values[i], units: plts[i] * uPerPlt,
+    };
+  });
+}
+
+// Deterministic seeded random (so transactions don't reshuffle on every render)
+function seededRandom(seed) {
+  let s = seed;
+  return () => {
+    s = (s * 1664525 + 1013904223) >>> 0;
+    return (s & 0x7FFFFFFF) / 0x7FFFFFFF;
+  };
+}
+
+// Generate inbound POs + outbound Sales Orders + Soft Reserves for the 90-day window.
+function generateTransactions(skus, code) {
+  const seed = code.split('').reduce((a,c) => a + c.charCodeAt(0), 0);
+  const rnd = seededRandom(seed);
+  const txns = [];
+  let poNum = 29400 + Math.floor(rnd() * 100);
+  let soNum = 18500 + Math.floor(rnd() * 100);
+  let srNum = 9200 + Math.floor(rnd() * 100);
+
+  const makeTxn = (day, type, number, sku, plt, change) => {
+    const unitsPerPlt = Math.max(1, Math.round(sku.units / sku.plt));
+    const valPerPlt = Math.round(sku.value / sku.plt);
+    return {
+      day, type, number,
+      sku: sku.name, code: sku.code,
+      units: plt * unitsPerPlt, plt, value: plt * valPerPlt,
+      change,
+    };
+  };
+
+  // Inbound POs — 14 across 90 days (increase capacity)
+  for (let i = 0; i < 14; i++) {
+    const day = Math.max(1, Math.round(3 + i * 6.3 + (rnd() - 0.5) * 4));
+    const sku = skus[Math.floor(rnd() * Math.min(8, skus.length))];
+    const plt = Math.max(4, Math.round(sku.plt * (0.25 + rnd() * 0.55)));
+    txns.push(makeTxn(day, 'PO', 'PO-' + (++poNum), sku, plt, plt));
+  }
+
+  // Outbound Sales Orders — 11 across 90 days (decrease capacity)
+  for (let i = 0; i < 11; i++) {
+    const day = Math.max(1, Math.round(6 + i * 8 + (rnd() - 0.5) * 4));
+    const sku = skus[Math.floor(rnd() * Math.min(10, skus.length))];
+    const plt = Math.max(2, Math.round(sku.plt * (0.15 + rnd() * 0.35)));
+    txns.push(makeTxn(day, 'SO', 'SO-' + (++soNum), sku, plt, -plt));
+  }
+
+  // Soft Reserves — 7 across 90 days (no immediate change; reserves curve only)
+  for (let i = 0; i < 7; i++) {
+    const day = Math.max(1, Math.round(4 + i * 12 + (rnd() - 0.5) * 5));
+    const sku = skus[Math.floor(rnd() * Math.min(12, skus.length))];
+    const plt = Math.max(2, Math.round(sku.plt * (0.08 + rnd() * 0.20)));
+    txns.push(makeTxn(day, 'SR', 'SR-' + (++srNum), sku, plt, 0));
+  }
+
+  return txns.sort((a, b) => a.day - b.day);
+}
+
+const WAREHOUSES = WAREHOUSE_DEFS.map(def => {
+  const skus = generateSkus(def.skuTemplates, def.usedPlt, def.ratePerPallet);
+  return {
+    ...def,
+    hasCapacityConfig: true,           // MaximumCapacity is set
+    skus,
+    skuCount: skus.length,
+    totalUnits: skus.reduce((a, s) => a + s.units, 0),
+    totalValue: def.usedPlt * def.ratePerPallet,
+    usedWithRsvPlt: def.seriesRsv[0],
+    transactions: generateTransactions(skus, def.code),
+  };
+});
+
+// Warehouses with NO MaximumCapacity set — clickable, but count-only mode (no ceiling math).
+const OTHER_WAREHOUSE_DEFS = [
+  {
+    code: 'EWR-12', name: 'Newark 3PL', ratePerPallet: 980, usedPlt: 620,
+    series:    [620,635,650,640,665,680,675,700,715,705,725,740,730],
+    seriesRsv: [690,705,725,715,740,760,755,780,800,790,815,835,825],
+    skuTemplates: [
+      { name: 'Storage Tote, 50qt',   code: 'TOTE-50QT' },
+      { name: 'Wire Shelving, 5-tier', code: 'SHV-5T' },
+      { name: 'Utility Cart',          code: 'CRT-UTL' },
+      { name: 'Folding Table, 6ft',    code: 'TBL-6FT' },
+      { name: 'Step Stool, 3-step',    code: 'STL-3S' },
+    ],
+  },
+  {
+    code: 'ATL-07', name: 'Atlanta DSV', ratePerPallet: 1320, usedPlt: 1450,
+    series:    [1450,1480,1510,1490,1530,1560,1545,1580,1610,1600,1630,1660,1650],
+    seriesRsv: [1610,1645,1680,1660,1700,1735,1720,1760,1795,1785,1820,1855,1845],
+    skuTemplates: [
+      { name: 'Robot Vacuum',        code: 'RVC-PRO' },
+      { name: 'Cordless Stick Vac',  code: 'VAC-STK' },
+      { name: 'Pressure Washer',     code: 'PWR-2000' },
+      { name: 'Shop Vacuum, 12gal',  code: 'SHP-12G' },
+      { name: 'Carpet Cleaner',      code: 'CPT-CLN' },
+    ],
+  },
+  {
+    code: 'LAX-03', name: 'Vernon Overflow', ratePerPallet: 1100, usedPlt: 310,
+    series:    [310,320,330,325,340,350,345,360,370,365,380,390,385],
+    seriesRsv: [350,362,375,368,382,395,388,402,415,408,422,435,428],
+    skuTemplates: [
+      { name: 'Patio Heater',     code: 'PHT-STD' },
+      { name: 'Outdoor Grill',    code: 'GRL-OUT' },
+      { name: 'Cooler, 65qt',     code: 'CLR-65' },
+      { name: 'Canopy Tent 10x10', code: 'TNT-1010' },
+    ],
+  },
+];
+
+const OTHER_WAREHOUSES = OTHER_WAREHOUSE_DEFS.map(def => {
+  const skus = generateSkus(def.skuTemplates, def.usedPlt, def.ratePerPallet);
+  return {
+    ...def,
+    maxPlt: null,
+    hasCapacityConfig: false,
+    skus,
+    skuCount: skus.length,
+    totalUnits: skus.reduce((a, s) => a + s.units, 0),
+    totalValue: def.usedPlt * def.ratePerPallet,
+    usedWithRsvPlt: def.seriesRsv[0],
+    transactions: generateTransactions(skus, def.code),
+  };
+});
+
+const ALL_WAREHOUSES = [...WAREHOUSES, ...OTHER_WAREHOUSES];
+
+// ────────────────────────────────────────────────
+// STATE
+// ────────────────────────────────────────────────
+const state = {
+  option: 'opt-e',
+  warehouseCode: 'BLF-04',
+  mode: 'plt',
+  tab: 'chart',
+  skuView: 'sku',
+  selectedSkuCode: null,
+  skuSearch: '',
+  sortKey: 'value',
+  sortDir: 'desc',
+  includeSR: false,  // option E — show projected capacity (with soft reserves)
+};
+
+function currentWarehouse() {
+  return ALL_WAREHOUSES.find(w => w.code === state.warehouseCode);
+}
+
+// ────────────────────────────────────────────────
+// FORMATTERS
+// ────────────────────────────────────────────────
+const fmt = {
+  int: n => n.toLocaleString('en-US'),
+  money: n => '$' + n.toLocaleString('en-US', { maximumFractionDigits: 0 }),
+  moneyShort: n => {
+    if (n >= 1_000_000) return '$' + (n / 1_000_000).toFixed(2).replace(/\.?0+$/, '') + 'M';
+    if (n >= 1_000)     return '$' + (n / 1_000).toFixed(0) + 'K';
+    return '$' + n.toFixed(0);
+  },
+  pct: (n, d) => Math.round((n / d) * 100) + '%',
+};
+
+// ────────────────────────────────────────────────
+// CHART RENDER
+// ────────────────────────────────────────────────
+function buildChart(svg, w, mode, selectedSku, opts = {}) {
+  const { singleCurve = false, includeSR = false } = opts;
+  const vbWidth  = +svg.getAttribute('viewBox').split(' ')[2];
+  const vbHeight = +svg.getAttribute('viewBox').split(' ')[3];
+  const padLeft = 44, padRight = 12, padTop = 28, padBottom = 28;
+  const innerW = vbWidth - padLeft - padRight;
+  const innerH = vbHeight - padTop - padBottom;
+
+  // Scale data based on mode + sku filter
+  const useValue = mode === 'value';
+  const useUnits = mode === 'units';
+  const unitMult = w.usedPlt ? (w.totalUnits / w.usedPlt) : 1;  // avg units per pallet
+  const skuShare = selectedSku ? (selectedSku.plt / w.usedPlt) : 1;
+  // Convert a raw pallet count into the active unit of measure (pallets / $ / units).
+  const scaleVal = p => useValue ? p * w.ratePerPallet : (useUnits ? p * unitMult : p);
+  // Choose which underlying series to use:
+  // - singleCurve=true (Option E): one line, either "used" or "projected" depending on includeSR
+  // - else (other options): two lines (used + reserves)
+  const primaryRaw = (singleCurve && includeSR) ? w.seriesRsv : w.series;
+  const secondaryRaw = w.seriesRsv;  // reserves curve (only rendered when !singleCurve)
+  const series = primaryRaw.map(p => scaleVal(p) * skuShare);
+  const seriesRsv = secondaryRaw.map(p => scaleVal(p) * skuShare);
+  const hasMax = w.maxPlt != null;
+  const maxLineBase = hasMax ? scaleVal(w.maxPlt) : 0;
+  const showMax = hasMax && !selectedSku;   // no ceiling line in count-only mode
+  const maxLine = maxLineBase;
+  const drawReservesLine = !singleCurve;
+
+  // Pick a y-axis ceiling that comfortably exceeds both max & top curve
+  const topCurve = drawReservesLine ? seriesRsv : series;
+  const dataMax = Math.max(showMax ? maxLine : 0, ...topCurve) * 1.08;
+  let yCeil;
+  if (useValue) {
+    // round to nearest nice value (M)
+    const oneM = 1_000_000;
+    yCeil = Math.ceil(dataMax / (oneM / 2)) * (oneM / 2);
+  } else {
+    // pallets round to 500; units (much larger) round to a nice power-of-ten step
+    const base = useUnits ? Math.max(1000, Math.pow(10, Math.floor(Math.log10(dataMax || 1)))) : 500;
+    yCeil = Math.ceil(dataMax / base) * base;
+  }
+  const yStep = yCeil / 4;
+
+  const pointCount = series.length;
+  const toX = i => padLeft + (i / (pointCount - 1)) * innerW;
+  const toY = v => padTop + (1 - v / yCeil) * innerH;
+
+  // Build paths
+  const linePath = (arr) => arr.map((v, i) => (i === 0 ? 'M' : 'L') + toX(i).toFixed(1) + ',' + toY(v).toFixed(1)).join(' ');
+  const usedPath = linePath(series);
+  const rsvPath  = linePath(seriesRsv);
+  const areaPath = rsvPath + ` L${toX(pointCount-1).toFixed(1)},${(padTop + innerH).toFixed(1)} L${padLeft.toFixed(1)},${(padTop + innerH).toFixed(1)} Z`;
+
+  // y-axis labels
+  const yLabel = v => useValue ? fmt.moneyShort(v) : fmt.int(Math.round(v));
+  const yTicks = [0, 1, 2, 3, 4].map(i => i * yStep);
+
+  // Crossing: where does the displayed curve first exceed maxLine?
+  // For two-line mode, use seriesRsv (the more pessimistic). For single-curve, use series.
+  let crossing = null;
+  if (showMax) {
+    const checkSeries = drawReservesLine ? seriesRsv : series;
+    for (let i = 1; i < checkSeries.length; i++) {
+      if (checkSeries[i] >= maxLine && checkSeries[i-1] < maxLine) {
+        const t = (maxLine - checkSeries[i-1]) / (checkSeries[i] - checkSeries[i-1]);
+        const dayIdx = (i - 1) + t;
+        crossing = { idx: dayIdx, x: toX(dayIdx), y: toY(maxLine) };
+        break;
+      }
+    }
+  }
+  // crossing dot position for "current" reserves on the line
+  const crossingDay = crossing ? Math.round((crossing.idx / (pointCount - 1)) * 90) : null;
+  const crossDate = crossing ? formatDateOffset(crossingDay) : null;
+
+  const maxLineY = showMax ? toY(maxLine) : -1000;
+
+  svg.innerHTML = `
+    <g stroke="#BEC8C8" stroke-width="0.5">
+      ${yTicks.map(t => `<line x1="${padLeft}" y1="${toY(t).toFixed(1)}" x2="${vbWidth - padRight}" y2="${toY(t).toFixed(1)}"/>`).join('')}
+    </g>
+    <g font-family="Noto Sans, sans-serif" font-size="${vbWidth > 900 ? 11 : 10}" fill="#3F4949">
+      ${yTicks.map(t => `<text x="${padLeft - 6}" y="${(toY(t) + 4).toFixed(1)}" text-anchor="end">${yLabel(t)}</text>`).join('')}
+    </g>
+
+    ${showMax ? `<line x1="${padLeft}" y1="${maxLineY.toFixed(1)}" x2="${vbWidth - padRight}" y2="${maxLineY.toFixed(1)}" stroke="#B95F1A" stroke-width="1.5" stroke-dasharray="6 4"/>` : ''}
+
+    <path d="${areaPath}" fill="#00696D" fill-opacity="0.08"/>
+    ${drawReservesLine ? `<path d="${rsvPath}" fill="none" stroke="#00696D" stroke-opacity="0.4" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>` : ''}
+    <path d="${usedPath}" fill="none" stroke="#00696D" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"/>
+
+    <circle cx="${toX(0).toFixed(1)}" cy="${toY(series[0]).toFixed(1)}" r="5" fill="#00696D"/>
+    <circle cx="${toX(0).toFixed(1)}" cy="${toY(series[0]).toFixed(1)}" r="10" fill="#00696D" fill-opacity="0.2"/>
+
+    ${crossing ? `
+      <line x1="${crossing.x.toFixed(1)}" y1="${maxLineY.toFixed(1)}" x2="${crossing.x.toFixed(1)}" y2="${(crossing.y + 16).toFixed(1)}" stroke="#B95F1A" stroke-width="0.8" stroke-dasharray="2 2"/>
+      <circle cx="${crossing.x.toFixed(1)}" cy="${maxLineY.toFixed(1)}" r="4" fill="#B95F1A"/>
+      <text x="${(crossing.x + 6).toFixed(1)}" y="${(maxLineY - 6).toFixed(1)}" font-family="Noto Sans, sans-serif" font-size="11" fill="#B95F1A" font-weight="500">${crossDate}</text>
+    ` : ''}
+
+    <!-- hover guide (updated dynamically) -->
+    <g class="hover-guide" style="display:none; pointer-events:none;">
+      <line class="hg-line" x1="0" y1="${padTop}" x2="0" y2="${padTop + innerH}" stroke="#00696D" stroke-width="1" stroke-dasharray="2 2"/>
+      <circle class="hg-dot-used" cx="0" cy="0" r="4" fill="#00696D" stroke="#fff" stroke-width="1.5"/>
+      <circle class="hg-dot-rsv" cx="0" cy="0" r="4" fill="#00696D" fill-opacity="0.4" stroke="#fff" stroke-width="1.5"/>
+    </g>
+
+    <!-- transparent hit area for hover -->
+    <rect class="hit" x="${padLeft}" y="${padTop}" width="${innerW}" height="${innerH}" fill="transparent" style="cursor: crosshair;"/>
+  `;
+
+  // Stash chart metrics on the SVG element for hover handler
+  svg._chart = {
+    padLeft, padTop, innerW, innerH,
+    pointCount, series, seriesRsv,
+    maxLine: showMax ? maxLine : null,
+    useValue,
+    toX, toY,
+  };
+
+  svg.classList.remove('fade-in'); void svg.offsetWidth; svg.classList.add('fade-in');
+  return { crossing, crossDate, crossingDay };
+}
+
+// Linear interpolation between two indices for a smooth hover read
+function interpAt(arr, idx) {
+  const lo = Math.floor(idx), hi = Math.ceil(idx);
+  if (lo === hi) return arr[lo];
+  const t = idx - lo;
+  return arr[lo] * (1 - t) + arr[hi] * t;
+}
+
+function attachChartHover(svg) {
+  if (svg._hoverWired) return;
+  svg._hoverWired = true;
+  const wrap = svg.parentElement; // .chart-wrap
+  // ensure tooltip exists
+  let tooltip = wrap.querySelector('.chart-tooltip');
+  if (!tooltip) {
+    tooltip = document.createElement('div');
+    tooltip.className = 'chart-tooltip';
+    wrap.style.position = 'relative';
+    wrap.appendChild(tooltip);
+  }
+
+  svg.addEventListener('mousemove', (e) => {
+    const m = svg._chart;
+    if (!m) return;
+    const rect = svg.getBoundingClientRect();
+    // convert client x to svg viewBox x
+    const vbWidth  = +svg.getAttribute('viewBox').split(' ')[2];
+    const scale = vbWidth / rect.width;
+    const vbX = (e.clientX - rect.left) * scale;
+    if (vbX < m.padLeft || vbX > m.padLeft + m.innerW) {
+      hideHover(svg, tooltip); return;
+    }
+    const dayFrac = (vbX - m.padLeft) / m.innerW * 90;
+    const idxFrac = (m.pointCount - 1) * (dayFrac / 90);
+    const usedV = interpAt(m.series, idxFrac);
+    const rsvV  = interpAt(m.seriesRsv, idxFrac);
+
+    // Update hover guide group
+    const guide = svg.querySelector('.hover-guide');
+    const hLine = guide.querySelector('.hg-line');
+    const dUsed = guide.querySelector('.hg-dot-used');
+    const dRsv  = guide.querySelector('.hg-dot-rsv');
+    guide.style.display = '';
+    hLine.setAttribute('x1', vbX);
+    hLine.setAttribute('x2', vbX);
+    dUsed.setAttribute('cx', vbX);
+    dUsed.setAttribute('cy', m.toY(usedV));
+    dRsv.setAttribute('cx', vbX);
+    dRsv.setAttribute('cy', m.toY(rsvV));
+
+    // Update tooltip (positioned in CSS px relative to wrap)
+    const pxX = vbX / scale;
+    const pxY = m.toY(Math.max(usedV, rsvV)) / scale;
+    tooltip.style.left = pxX + 'px';
+    tooltip.style.top  = pxY + 'px';
+    const fmtVal = v => m.useValue ? fmt.moneyShort(v) : fmt.int(Math.round(v));
+    tooltip.innerHTML = `
+      <div class="ct-date">${formatDateOffset(Math.round(dayFrac))}</div>
+      <div class="ct-row"><span class="l"><i class="l1"></i>Used</span><b>${fmtVal(usedV)}</b></div>
+      <div class="ct-row"><span class="l"><i class="l2"></i>+ Reserves</span><b>${fmtVal(rsvV)}</b></div>
+      ${m.maxLine ? `<div class="ct-row"><span class="l"><i class="l3"></i>Max</span><b>${fmtVal(m.maxLine)}</b></div>` : ''}
+    `;
+    tooltip.classList.add('visible');
+
+    // Highlight the nearest x-axis label
+    const xLabels = wrap.querySelector('.chart-x');
+    if (xLabels) {
+      const day = Math.round(dayFrac);
+      let nearest = null, nearestDist = Infinity;
+      xLabels.querySelectorAll('span[data-day]').forEach(s => {
+        const d = +s.dataset.day;
+        const dist = Math.abs(d - day);
+        if (dist < nearestDist) { nearestDist = dist; nearest = s; }
+        s.classList.remove('active');
+      });
+      if (nearest && nearestDist <= 18) nearest.classList.add('active');
+    }
+  });
+
+  svg.addEventListener('mouseleave', () => hideHover(svg, tooltip));
+}
+
+function hideHover(svg, tooltip) {
+  const guide = svg.querySelector('.hover-guide');
+  if (guide) guide.style.display = 'none';
+  if (tooltip) tooltip.classList.remove('visible');
+  const wrap = svg.parentElement;
+  const xLabels = wrap && wrap.querySelector('.chart-x');
+  if (xLabels) xLabels.querySelectorAll('span').forEach(s => s.classList.remove('active'));
+}
+
+// "May 26" style date label, offset days from today (mocked as May 26)
+function formatDateOffset(daysFromStart) {
+  const start = new Date(2026, 4, 26); // May 26 2026
+  const d = new Date(start.getTime() + daysFromStart * 86400000);
+  return d.toLocaleString('en-US', { month: 'short', day: 'numeric' });
+}
+
+// Mini sparkline for warehouse list — used + reserves curves vs max ceiling.
+function renderSparkline(warehouse) {
+  const W = 100, H = 22;
+  const max = warehouse.maxPlt;
+  const series = warehouse.series;
+  const seriesRsv = warehouse.seriesRsv;
+  const yMax = Math.max(max * 1.05, ...seriesRsv);
+  const toX = i => (i / (series.length - 1)) * W;
+  const toY = v => H - (v / yMax) * H;
+  const linePath = arr => arr.map((v, i) => (i === 0 ? 'M' : 'L') + toX(i).toFixed(1) + ',' + toY(v).toFixed(1)).join(' ');
+  const pct = warehouse.usedPlt / warehouse.maxPlt;
+  const stroke = pct >= 0.8 ? 'var(--md-warn)' : 'var(--md-sys-color-primary)';
+  const fillOp = pct >= 0.8 ? '0.10' : '0.08';
+  const usedPath = linePath(series);
+  const rsvPath = linePath(seriesRsv);
+  const areaPath = rsvPath + ` L${W},${H} L0,${H} Z`;
+  const maxY = toY(max);
+  return `
+    <svg viewBox="0 0 ${W} ${H}" width="100%" height="${H}" preserveAspectRatio="none" style="display: block; overflow: visible;">
+      <path d="${areaPath}" fill="${stroke}" fill-opacity="${fillOp}"/>
+      <line x1="0" y1="${maxY.toFixed(1)}" x2="${W}" y2="${maxY.toFixed(1)}" stroke="var(--md-warn)" stroke-width="0.6" stroke-dasharray="2 2"/>
+      <path d="${rsvPath}" fill="none" stroke="${stroke}" stroke-opacity="0.4" stroke-width="1"/>
+      <path d="${usedPath}" fill="none" stroke="${stroke}" stroke-width="1.4" stroke-linecap="round"/>
+      <circle cx="0" cy="${toY(series[0]).toFixed(1)}" r="1.6" fill="${stroke}"/>
+    </svg>`;
+}
+
+// ── Table renderers ──
+function renderSkuTable(skus) {
+  const totUnits = skus.reduce((a, s) => a + s.units, 0);
+  const totPlt = skus.reduce((a, s) => a + s.plt, 0);
+  const totVal = skus.reduce((a, s) => a + s.value, 0);
+  return `
+    <table class="m3-table">
+      <thead>
+        <tr>
+          <th data-sort="name">SKU<span class="material-symbols-rounded sort-ind">arrow_drop_down</span></th>
+          <th class="num" data-sort="units">Qty<span class="material-symbols-rounded sort-ind">arrow_drop_down</span></th>
+          <th class="num" data-sort="plt">Plt<span class="material-symbols-rounded sort-ind">arrow_drop_down</span></th>
+          <th class="num" data-sort="value">Value<span class="material-symbols-rounded sort-ind">arrow_drop_down</span></th>
+        </tr>
+      </thead>
+      <tbody>
+        ${skus.map(s => `
+          <tr data-sku="${s.code}">
+            <td><div class="sku-name">${s.name}</div><span class="sku-code">${s.code}</span></td>
+            <td class="num">${fmt.int(s.units)}</td>
+            <td class="num">${fmt.int(s.plt)}</td>
+            <td class="num">${fmt.money(s.value)}</td>
+          </tr>`).join('')}
+      </tbody>
+      <tfoot>
+        <tr>
+          <td>Total &middot; ${skus.length} SKUs</td>
+          <td class="num">${fmt.int(totUnits)}</td>
+          <td class="num">${fmt.int(totPlt)}</td>
+          <td class="num">${fmt.money(totVal)}</td>
+        </tr>
+      </tfoot>
+    </table>`;
+}
+
+// Walk transactions chronologically, computing the running warehouse totals
+// at the end of each active day.
+function computeRunningByDay(warehouse, txns) {
+  const groups = {};
+  txns.forEach(t => {
+    if (!groups[t.day]) groups[t.day] = [];
+    groups[t.day].push(t);
+  });
+  const days = Object.keys(groups).map(Number).sort((a, b) => a - b);
+
+  let runPlt = warehouse.usedPlt;
+  let runVal = warehouse.totalValue;
+  let runRsv = warehouse.usedWithRsvPlt;
+  let runUnits = warehouse.skus.reduce((a, s) => a + s.units, 0);
+
+  return days.map(day => {
+    let poCount = 0, soCount = 0, srCount = 0;
+    groups[day].forEach(t => {
+      if (t.type === 'PO') {
+        poCount++;
+        runPlt += t.plt; runRsv += t.plt;
+        runVal += t.value; runUnits += t.units;
+      } else if (t.type === 'SO') {
+        soCount++;
+        runPlt -= t.plt; runRsv -= t.plt;
+        runVal -= t.value; runUnits -= t.units;
+      } else if (t.type === 'SR') {
+        srCount++;
+        // Soft reserve increases reserves curve only, not "used"
+        runRsv += t.plt;
+      }
+    });
+    return {
+      day,
+      poCount, soCount, srCount,
+      runPlt, runVal, runRsv, runUnits,
+    };
+  });
+}
+
+function renderDayTable(warehouse, txns, opts = {}) {
+  const { includeSR = false } = opts;
+  const days = computeRunningByDay(warehouse, txns);
+  const maxPlt = warehouse.maxPlt;
+  const hasMax = maxPlt != null;
+  const pctStr = plt => hasMax ? `${Math.round((plt / maxPlt) * 100)}%` : '—';
+  // Pick which running total to display
+  const pltOf = d => includeSR ? d.runRsv : d.runPlt;
+  const startPlt = warehouse.usedPlt;
+  const startPctPlt = includeSR ? warehouse.usedWithRsvPlt : warehouse.usedPlt;
+  const colLabel = includeSR ? 'Projected Plt' : (hasMax ? 'Used Plt' : 'Pallets');
+  const pctLabel = includeSR ? '% Projected' : '% Util';
+
+  return `
+    <table class="m3-table">
+      <thead>
+        <tr>
+          <th>Date</th>
+          <th>Activity</th>
+          <th class="num">Total Qty</th>
+          <th class="num">${colLabel}</th>
+          <th class="num">${pctLabel}</th>
+          <th class="num">Total Value</th>
+        </tr>
+      </thead>
+      <tbody>
+        <tr style="background: var(--md-sys-color-surface-container);">
+          <td style="font-family: var(--font-mono); font-size: 12px; white-space: nowrap; font-weight: 500;">${formatDateOffset(0)}</td>
+          <td style="font-size: 11px; color: var(--md-sys-color-on-surface-variant); letter-spacing: 0.3px;">START</td>
+          <td class="num">${fmt.int(warehouse.totalUnits)}</td>
+          <td class="num">${fmt.int(startPctPlt)}</td>
+          <td class="num">${pctStr(startPctPlt)}</td>
+          <td class="num">${fmt.money(warehouse.totalValue)}</td>
+        </tr>
+        ${days.map(d => {
+          const dPlt = pltOf(d);
+          const pct = hasMax ? Math.round((dPlt / maxPlt) * 100) : 0;
+          const warn = hasMax && pct >= 80;
+          // When NOT including SR, SR-only days look unchanged from the previous row;
+          // still show the row so the SR activity is visible.
+          return `
+          <tr>
+            <td style="font-family: var(--font-mono); font-size: 12px; white-space: nowrap;">${formatDateOffset(d.day)}</td>
+            <td>
+              <div style="display: flex; gap: 4px; flex-wrap: wrap;">
+                ${d.poCount ? `<span class="txn-chip po">${d.poCount} PO</span>` : ''}
+                ${d.soCount ? `<span class="txn-chip so">${d.soCount} SO</span>` : ''}
+                ${d.srCount ? `<span class="txn-chip sr">${d.srCount} SR</span>` : ''}
+              </div>
+            </td>
+            <td class="num">${fmt.int(d.runUnits)}</td>
+            <td class="num">${fmt.int(dPlt)}</td>
+            <td class="num" style="${warn ? `color: var(--md-warn); font-weight: 500;` : ''}">${pctStr(dPlt)}</td>
+            <td class="num">${fmt.money(d.runVal)}</td>
+          </tr>`;
+        }).join('')}
+      </tbody>
+      <tfoot>
+        <tr>
+          <td>End of period</td>
+          <td style="font-size: 11px; color: var(--md-sys-color-on-surface-variant);">
+            day ${days.length ? days[days.length-1].day : 0} &middot; ${days.length} active
+          </td>
+          <td class="num">${fmt.int(days.length ? days[days.length-1].runUnits : warehouse.totalUnits)}</td>
+          <td class="num">${fmt.int(days.length ? pltOf(days[days.length-1]) : startPctPlt)}</td>
+          <td class="num">${pctStr(days.length ? pltOf(days[days.length-1]) : startPctPlt)}</td>
+          <td class="num">${fmt.money(days.length ? days[days.length-1].runVal : warehouse.totalValue)}</td>
+        </tr>
+      </tfoot>
+    </table>`;
+}
+
+function renderTxnTable(txns) {
+  // Inbound positive, Outbound negative; reserves don't change "used"
+  const net = txns.reduce((a, t) => ({
+    units: a.units + t.change ? (t.units * Math.sign(t.change)) : 0,
+    plt: a.plt + t.change,
+    value: a.value + (t.type === 'SR' ? 0 : (t.change > 0 ? t.value : -t.value)),
+  }), { units: 0, plt: 0, value: 0 });
+
+  // Cleaner aggregate: split by type
+  const inPO = txns.filter(t => t.type === 'PO').reduce((a, t) => a + t.plt, 0);
+  const outSO = txns.filter(t => t.type === 'SO').reduce((a, t) => a + t.plt, 0);
+  const heldSR = txns.filter(t => t.type === 'SR').reduce((a, t) => a + t.plt, 0);
+  const netPlt = inPO - outSO;
+  const netVal = txns.reduce((a, t) => t.type === 'SR' ? a : (a + (t.change > 0 ? t.value : -t.value)), 0);
+  const inQty = txns.filter(t => t.type === 'PO').reduce((a, t) => a + t.units, 0);
+  const outQty = txns.filter(t => t.type === 'SO').reduce((a, t) => a + t.units, 0);
+  const netQty = inQty - outQty;
+
+  return `
+    <table class="m3-table">
+      <thead>
+        <tr>
+          <th>Date</th>
+          <th>Type</th>
+          <th>SKU</th>
+          <th class="num">Qty</th>
+          <th class="num">Plt</th>
+          <th class="num">Value</th>
+        </tr>
+      </thead>
+      <tbody>
+        ${txns.map(t => {
+          // SR doesn't affect used; show neutral. PO positive, SO negative.
+          const isReserve = t.type === 'SR';
+          const sign = isReserve ? '' : (t.change >= 0 ? '+' : '−');
+          const klass = isReserve ? '' : (t.change >= 0 ? 'txn-change-pos' : 'txn-change-neg');
+          const typeKlass = t.type === 'PO' ? 'po' : (t.type === 'SO' ? 'so' : (t.type === 'SR' ? 'sr' : 'cur'));
+          return `
+            <tr data-sku="${t.code}">
+              <td style="font-family: var(--font-mono); font-size: 12px; white-space: nowrap;">${formatDateOffset(t.day)}</td>
+              <td>
+                <span class="txn-chip ${typeKlass}">${t.type}</span>
+                <div style="font-family: var(--font-mono); font-size: 11px; color: var(--md-sys-color-on-surface-variant); margin-top: 2px;">${t.number}</div>
+              </td>
+              <td>
+                <div class="sku-name">${t.sku}</div>
+                <span class="sku-code">${t.code}</span>
+              </td>
+              <td class="num"><span class="${klass}">${sign}${fmt.int(Math.abs(t.units))}</span></td>
+              <td class="num"><span class="${klass}">${sign}${fmt.int(Math.abs(t.plt))}</span></td>
+              <td class="num"><span class="${klass}">${sign}${fmt.money(Math.abs(t.value))}</span></td>
+            </tr>`;
+        }).join('')}
+      </tbody>
+      <tfoot>
+        <tr>
+          <td>Net &middot; ${txns.length} txns</td>
+          <td></td>
+          <td style="font-size: 11px; color: var(--md-sys-color-on-surface-variant);">
+            <span class="txn-change-pos">+${fmt.int(inQty)}</span> /
+            <span class="txn-change-neg">−${fmt.int(outQty)}</span>
+          </td>
+          <td class="num">${netQty >= 0 ? '+' : '−'}${fmt.int(Math.abs(netQty))}</td>
+          <td class="num">${netPlt >= 0 ? '+' : '−'}${fmt.int(Math.abs(netPlt))}</td>
+          <td class="num">${netVal >= 0 ? '+' : '−'}${fmt.money(Math.abs(netVal))}</td>
+        </tr>
+      </tfoot>
+    </table>`;
+}
+
+// ────────────────────────────────────────────────
+// RENDER
+// ────────────────────────────────────────────────
+function render() {
+  const w = currentWarehouse();
+  const useValue = state.mode === 'value';
+  const useUnits = state.mode === 'units';
+  const unitMult = w.usedPlt ? (w.totalUnits / w.usedPlt) : 1;
+  const selectedSku = state.selectedSkuCode ? w.skus.find(s => s.code === state.selectedSkuCode) : null;
+
+  // SKUs visible in table
+  const visibleSkus = selectedSku ? [selectedSku] : w.skus;
+  const sortedSkus = [...visibleSkus].sort((a, b) => {
+    let av = a[state.sortKey], bv = b[state.sortKey];
+    if (typeof av === 'string') { av = av.toLowerCase(); bv = bv.toLowerCase(); }
+    if (av < bv) return state.sortDir === 'asc' ? -1 : 1;
+    if (av > bv) return state.sortDir === 'asc' ? 1 : -1;
+    return 0;
+  });
+
+  // Transactions visible (filtered by sku if selected)
+  const visibleTxns = selectedSku
+    ? w.transactions.filter(t => t.code === selectedSku.code)
+    : w.transactions;
+
+  // Show only the active option
+  document.querySelectorAll('.opt').forEach(o => o.classList.toggle('active', o.id === state.option));
+
+  // Update active option's bindings
+  const root = document.getElementById(state.option);
+  if (!root) return;
+
+  // Title strings — handle count-only (no max) warehouses
+  const hasMax = w.maxPlt != null;
+  const utilPct = hasMax ? fmt.pct(w.usedPlt, w.maxPlt) : '—';
+  const rsvPct  = hasMax ? fmt.pct(w.usedWithRsvPlt, w.maxPlt) : '—';
+  const ratio   = hasMax ? `${fmt.int(w.usedPlt)} / ${fmt.int(w.maxPlt)}` : fmt.int(w.usedPlt);
+  const totalVal = fmt.moneyShort(w.totalValue);
+  const maxLegendText = !hasMax ? ''
+    : useValue ? `Max ${fmt.moneyShort(w.maxPlt * w.ratePerPallet)}`
+    : useUnits ? `Max ${fmt.int(Math.round(w.maxPlt * unitMult))}`
+    : `Max ${fmt.int(w.maxPlt)}`;
+
+  // Set binds
+  const set = (key, val) => root.querySelectorAll(`[data-bind="${key}"]`).forEach(el => el.textContent = val);
+  set('title', `Inventory Activity for ${w.name}`);
+  set('wh-label', `${w.name.split(' ')[0]} (${w.code})`);
+  set('wh-name', w.name);
+  set('wh-code', w.code);
+  set('util-pct', utilPct);
+  set('rsv-pct', rsvPct);
+  set('rsv-plt', fmt.int(w.usedWithRsvPlt));
+  set('util-ratio', ratio);
+  set('total-value', totalVal);
+  set('total-value-short', totalVal);
+  set('total-units', fmt.int(w.totalUnits));
+  set('used-plt', fmt.int(w.usedPlt));
+  set('max-plt', hasMax ? fmt.int(w.maxPlt) : '—');
+  set('plt-sub', hasMax ? `of ${fmt.int(w.maxPlt)}` : 'no limit set');
+  set('max-legend', maxLegendText);
+  set('sku-count', w.skuCount);
+  set('rate-per-plt', fmt.money(w.ratePerPallet));
+  set('curve-label', (state.includeSR && hasMax) ? 'Projected capacity' : (hasMax ? 'Used capacity' : 'Inventory on hand'));
+
+  // Build chart and get crossing info
+  const chartSvg = root.querySelector(`[data-chart]`);
+  let crossInfo = null;
+  if (chartSvg) {
+    const isOptE = state.option === 'opt-e';
+    crossInfo = buildChart(chartSvg, w, state.mode, selectedSku, {
+      singleCurve: isOptE,
+      includeSR: state.includeSR && w.maxPlt != null,  // no projected curve in count-only
+    });
+    attachChartHover(chartSvg);
+  }
+
+  // Days to max + headline (Options D and E both use hero card)
+  const daysToMax = crossInfo && crossInfo.crossingDay != null ? crossInfo.crossingDay : null;
+  if (state.option === 'opt-d' || state.option === 'opt-e') {
+    let headline;
+    if (!hasMax) {
+      // Count-only mode — no ceiling math
+      set('days-to-max', '—');
+      set('cross-date', 'no capacity limit');
+      headline = `<span class="em">${fmt.int(w.totalUnits)}</span> units on hand &mdash; no capacity limit set for this warehouse.`;
+    } else {
+      if (daysToMax != null) {
+        set('days-to-max', `${daysToMax}d`);
+        set('cross-date', `crosses ${crossInfo.crossDate}`);
+      } else {
+        set('days-to-max', '—');
+        set('cross-date', 'safely below max');
+      }
+      const pct = w.usedPlt / w.maxPlt;
+      if (daysToMax != null && daysToMax <= 14)      headline = `<span class="em">${utilPct}</span> full &mdash; capacity in ${daysToMax} days.`;
+      else if (daysToMax != null)                    headline = `<span class="em">${utilPct}</span> full, climbing to capacity in ${daysToMax} days.`;
+      else if (pct >= 0.6)                           headline = `<span class="em">${utilPct}</span> full, comfortable headroom for the next 90 days.`;
+      else                                            headline = `<span class="em">${utilPct}</span> full &mdash; plenty of room.`;
+    }
+    const headlineEl = root.querySelector('[data-bind="headline"]');
+    if (headlineEl) headlineEl.innerHTML = headline;
+  }
+
+  // Count-only mode (Option E): hide capacity-limit UI (projected checkbox, max legend)
+  if (state.option === 'opt-e') {
+    const srLabel = root.querySelector('[data-action="toggle-sr"]');
+    const srWrap = srLabel ? srLabel.closest('.m3-checkbox') : null;
+    if (srWrap) srWrap.style.display = hasMax ? '' : 'none';
+    // Hide the "Max …" legend item when there's no ceiling
+    const maxLegendEl = root.querySelector('[data-bind="max-legend"]');
+    if (maxLegendEl) {
+      const legendItem = maxLegendEl.closest('span');
+      if (legendItem) legendItem.style.display = hasMax ? '' : 'none';
+    }
+  }
+
+  // Two-section warehouse list (Option E): capacity-managed + other
+  if (state.option === 'opt-e') {
+    const listRoot = root.querySelector('[data-bind="wh-list-owned"]');
+    if (listRoot) {
+      const managed = WAREHOUSES.filter(wh => wh.hasCapacityConfig);
+      const managedHtml = managed.map(wh => {
+        const p = Math.round((wh.usedPlt / wh.maxPlt) * 100);
+        const warn = p >= 80;
+        return `
+          <div class="opt-c-list-item ${wh.code === w.code ? 'selected' : ''}" data-wh="${wh.code}">
+            <div class="opt-c-list-item-top">
+              <div class="opt-c-list-item-name">${wh.name}</div>
+              <div class="opt-c-list-item-code">${wh.code}</div>
+            </div>
+            <div class="opt-c-list-item-meta">
+              <span>${fmt.int(wh.usedPlt)} / ${fmt.int(wh.maxPlt)}</span>
+              <span class="pct ${warn ? 'warn' : ''}">${p}%</span>
+            </div>
+            <div class="opt-c-list-sparkline">${renderSparkline(wh)}</div>
+          </div>`;
+      }).join('');
+      const otherHtml = OTHER_WAREHOUSES.map(wh => `
+        <div class="opt-c-list-item muted ${wh.code === w.code ? 'selected' : ''}" data-wh="${wh.code}" title="No maximum capacity configured — inventory only">
+          <div class="opt-c-list-item-top">
+            <div class="opt-c-list-item-name">${wh.name}</div>
+            <div class="opt-c-list-item-code">${wh.code}</div>
+          </div>
+          <div class="opt-e-other-hint">${fmt.int(wh.usedPlt)} plt &middot; no limit set</div>
+        </div>`).join('');
+      listRoot.innerHTML = `
+        <div class="opt-e-section-label">Capacity managed &middot; ${managed.length}</div>
+        ${managedHtml}
+        <div class="opt-e-section-label other">Other warehouses &middot; ${OTHER_WAREHOUSES.length}</div>
+        ${otherHtml}`;
+    }
+
+    // Reflect checkbox state
+    const cb = root.querySelector('[data-action="toggle-sr"]');
+    if (cb) cb.checked = state.includeSR;
+  }
+
+  // Chart X axis labels (4 ticks across 90 days, with data-day for hover sync)
+  const xTicks = root.querySelector(`[data-bind="chart-x"]`);
+  if (xTicks) {
+    const days = [0, 30, 60, 90];
+    xTicks.innerHTML = days.map(d => `<span data-day="${d}">${formatDateOffset(d)}</span>`).join('');
+  }
+
+  // Warehouse list (option C)
+  if (state.option === 'opt-c') {
+    const listRoot = root.querySelector('[data-bind="wh-list"]');
+    listRoot.innerHTML = WAREHOUSES.map(wh => {
+      const p = Math.round((wh.usedPlt / wh.maxPlt) * 100);
+      const warn = p >= 80;
+      return `
+        <div class="opt-c-list-item ${wh.code === w.code ? 'selected' : ''}" data-wh="${wh.code}">
+          <div class="opt-c-list-item-top">
+            <div class="opt-c-list-item-name">${wh.name}</div>
+            <div class="opt-c-list-item-code">${wh.code}</div>
+          </div>
+          <div class="opt-c-list-item-meta">
+            <span>${fmt.int(wh.usedPlt)} / ${fmt.int(wh.maxPlt)}</span>
+            <span class="pct ${warn ? 'warn' : ''}">${p}%</span>
+          </div>
+          <div class="opt-c-list-sparkline">${renderSparkline(wh)}</div>
+        </div>`;
+    }).join('');
+  }
+
+  // Warehouse menu (Options A, B, D)
+  const menu = root.querySelector('[data-menu="wh"]');
+  if (menu) {
+    menu.innerHTML = `<div class="m3-menu-items">` + WAREHOUSES.map(wh => {
+      const p = Math.round((wh.usedPlt / wh.maxPlt) * 100);
+      return `
+        <div class="m3-menu-item ${wh.code === w.code ? 'selected' : ''}" data-wh="${wh.code}">
+          <span class="material-symbols-rounded icon-sm">${wh.code === w.code ? 'check' : 'warehouse'}</span>
+          <span class="nm">${wh.name}</span>
+          <span class="cd">${wh.code}</span>
+          <span class="pct">${p}%</span>
+        </div>`;
+    }).join('') + `</div>`;
+  }
+
+  // SKU filter menu + chip — with search + scrollable items
+  const skuMenu = root.querySelector('[data-menu="sku"]');
+  if (skuMenu) {
+    const q = state.skuSearch.toLowerCase();
+    const filtered = q
+      ? w.skus.filter(s => s.name.toLowerCase().includes(q) || s.code.toLowerCase().includes(q))
+      : w.skus;
+    const wasFocused = document.activeElement &&
+      document.activeElement.closest && document.activeElement.closest('.m3-menu-search');
+    skuMenu.innerHTML = `
+      <div class="m3-menu-search">
+        <span class="material-symbols-rounded">search</span>
+        <input type="text" placeholder="Search SKUs..." value="${state.skuSearch}" data-action="sku-search-input" />
+      </div>
+      <div class="m3-menu-items">
+        ${!q ? `
+          <div class="m3-menu-item ${!selectedSku ? 'selected' : ''}" data-sku="">
+            <span class="material-symbols-rounded icon-sm">${!selectedSku ? 'check' : 'select_all'}</span>
+            <span class="nm">All SKUs</span>
+            <span class="pct">${w.skuCount}</span>
+          </div>` : ''}
+        ${filtered.map(s => `
+          <div class="m3-menu-item ${selectedSku && selectedSku.code === s.code ? 'selected' : ''}" data-sku="${s.code}">
+            <span class="material-symbols-rounded icon-sm">${selectedSku && selectedSku.code === s.code ? 'check' : 'inventory_2'}</span>
+            <span class="nm">${s.name}</span>
+            <span class="cd">${s.code}</span>
+          </div>`).join('')}
+        ${filtered.length === 0 ? `<div class="m3-menu-empty">No SKUs match "${state.skuSearch}"</div>` : ''}
+      </div>`;
+    if (wasFocused) {
+      const inp = skuMenu.querySelector('.m3-menu-search input');
+      if (inp) {
+        inp.focus();
+        const v = inp.value;
+        inp.setSelectionRange(v.length, v.length);
+      }
+    }
+  }
+  // SKU filter chip styling + label
+  root.querySelectorAll('[data-bind="sku-filter-label"]').forEach(el => {
+    el.textContent = selectedSku ? selectedSku.name : 'All SKUs';
+  });
+  root.querySelectorAll('.m3-chip-wrap').forEach(wrap => {
+    const isSkuFilter = wrap.querySelector('[data-action="open-sku-menu"]');
+    if (isSkuFilter) {
+      const chip = wrap.querySelector('.m3-chip');
+      chip.classList.toggle('sku-filter-active', !!selectedSku);
+    }
+  });
+
+  // Filter banner
+  const banner = root.querySelector('[data-bind="filter-banner"]');
+  if (banner) {
+    if (selectedSku) {
+      banner.innerHTML = `
+        <div class="filter-banner">
+          <span class="material-symbols-rounded">filter_alt</span>
+          <div class="grow">Showing only <b>${selectedSku.name}</b> &middot; 1 of ${w.skuCount} SKUs</div>
+          <button data-action="clear-sku-filter">
+            <span class="material-symbols-rounded">close</span>
+            Clear filter
+          </button>
+        </div>`;
+    } else {
+      banner.innerHTML = '';
+    }
+  }
+
+  // Breakdown card — title + table depend on skuView
+  const titleEl = root.querySelector('[data-bind="breakdown-title"]');
+  const tableSlot = root.querySelector('[data-bind="breakdown-table"]');
+  const summarySlot = root.querySelector('[data-bind="breakdown-summary"]');
+  const viewTitles = { sku: 'SKU breakdown', day: 'Daily totals', date: 'Transactions by date' };
+  if (titleEl) titleEl.textContent = viewTitles[state.skuView] || 'Breakdown';
+
+  if (tableSlot) {
+    if (state.skuView === 'sku') {
+      tableSlot.innerHTML = renderSkuTable(sortedSkus);
+    } else if (state.skuView === 'day') {
+      tableSlot.innerHTML = renderDayTable(w, visibleTxns, { includeSR: state.includeSR });
+    } else {
+      tableSlot.innerHTML = renderTxnTable(visibleTxns);
+    }
+  }
+
+  if (summarySlot) {
+    if (state.skuView === 'sku') {
+      summarySlot.innerHTML = `
+        <span><b>${w.skuCount}</b> SKUs</span>
+        <span><b>${fmt.int(w.usedPlt)}</b> pallets &middot; <b>${fmt.moneyShort(w.totalValue)}</b></span>`;
+    } else if (state.skuView === 'day') {
+      const days = computeRunningByDay(w, visibleTxns);
+      const endPlt = days.length ? days[days.length-1].runPlt : w.usedPlt;
+      const endPct = Math.round((endPlt / w.maxPlt) * 100);
+      summarySlot.innerHTML = `
+        <span><b>${days.length}</b> active days &middot; ${visibleTxns.length} transactions</span>
+        <span>Ends at <b>${endPct}%</b> &middot; <b>${fmt.int(endPlt)}</b> plt</span>`;
+    } else {
+      const inbound = visibleTxns.filter(t => t.type === 'PO');
+      const outbound = visibleTxns.filter(t => t.type === 'SO');
+      const reserves = visibleTxns.filter(t => t.type === 'SR');
+      const inPlt = inbound.reduce((a, t) => a + t.plt, 0);
+      const outPlt = outbound.reduce((a, t) => a + t.plt, 0);
+      summarySlot.innerHTML = `
+        <span><b>${inbound.length}</b> PO &middot; <b>${outbound.length}</b> SO &middot; <b>${reserves.length}</b> SR</span>
+        <span><span class="txn-change-pos">+${fmt.int(inPlt)}</span> / <span class="txn-change-neg">−${fmt.int(outPlt)}</span> plt</span>`;
+    }
+  }
+
+  // Sort indicator (only when in sku view)
+  root.querySelectorAll('[data-sort]').forEach(th => {
+    th.classList.toggle('sorted', th.dataset.sort === state.sortKey);
+    const ind = th.querySelector('.sort-ind');
+    if (ind) ind.textContent = state.sortDir === 'asc' ? 'arrow_drop_up' : 'arrow_drop_down';
+  });
+
+  // skuView toggle reflection
+  root.querySelectorAll('[data-action="toggle-skuview"] button').forEach(b => {
+    b.classList.toggle('selected', b.dataset.skuview === state.skuView);
+  });
+
+  // Toggle mode buttons reflect state
+  root.querySelectorAll('[data-action="toggle-mode"] button').forEach(b => {
+    b.classList.toggle('selected', b.dataset.mode === state.mode);
+  });
+
+  // Tabs (option B)
+  if (state.option === 'opt-b') {
+    root.querySelectorAll('[data-tab]').forEach(t => t.classList.toggle('selected', t.dataset.tab === state.tab));
+    root.querySelectorAll('[data-tab-panel]').forEach(p => p.classList.toggle('active', p.dataset.tabPanel === state.tab));
+  }
+}
+
+// ────────────────────────────────────────────────
+// EVENT WIRING
+// ────────────────────────────────────────────────
+document.addEventListener('click', (e) => {
+  // close all menus when clicking outside any trigger or open menu
+  const whTrigger = e.target.closest('[data-action="open-wh-menu"]');
+  const skuTrigger = e.target.closest('[data-action="open-sku-menu"]');
+  if (!e.target.closest('.m3-menu') && !whTrigger && !skuTrigger) {
+    document.querySelectorAll('.m3-menu.open').forEach(m => m.classList.remove('open'));
+  }
+
+  // open warehouse menu
+  if (whTrigger) {
+    e.stopPropagation();
+    const menu = whTrigger.parentElement.querySelector('.m3-menu');
+    const wasOpen = menu.classList.contains('open');
+    document.querySelectorAll('.m3-menu.open').forEach(m => m.classList.remove('open'));
+    if (!wasOpen) menu.classList.add('open');
+    return;
+  }
+
+  // open SKU filter menu
+  if (skuTrigger) {
+    e.stopPropagation();
+    const menu = skuTrigger.parentElement.querySelector('.m3-menu');
+    const wasOpen = menu.classList.contains('open');
+    document.querySelectorAll('.m3-menu.open').forEach(m => m.classList.remove('open'));
+    if (!wasOpen) menu.classList.add('open');
+    return;
+  }
+
+  // clear SKU filter (× on chip OR banner button)
+  const clearBtn = e.target.closest('[data-action="clear-sku-filter"]');
+  if (clearBtn) {
+    e.stopPropagation();
+    state.selectedSkuCode = null;
+    render();
+    return;
+  }
+
+  // pick from menu (warehouse or sku)
+  const menuItem = e.target.closest('.m3-menu-item');
+  if (menuItem) {
+    if (menuItem.dataset.wh !== undefined) {
+      state.warehouseCode = menuItem.dataset.wh;
+      state.selectedSkuCode = null;
+      state.skuSearch = '';
+    } else if (menuItem.dataset.sku !== undefined) {
+      state.selectedSkuCode = menuItem.dataset.sku || null;
+      state.skuSearch = '';
+    }
+    document.querySelectorAll('.m3-menu.open').forEach(m => m.classList.remove('open'));
+    render();
+    return;
+  }
+
+  // pick warehouse from master list
+  const listItem = e.target.closest('.opt-c-list-item');
+  if (listItem) {
+    state.warehouseCode = listItem.dataset.wh;
+    render();
+    return;
+  }
+
+  // toggle Pallets / Value
+  const modeBtn = e.target.closest('[data-action="toggle-mode"] button');
+  if (modeBtn) {
+    state.mode = modeBtn.dataset.mode;
+    render();
+    return;
+  }
+
+  // toggle SKU view (sku / date)
+  const skuViewBtn = e.target.closest('[data-action="toggle-skuview"] button');
+  if (skuViewBtn) {
+    state.skuView = skuViewBtn.dataset.skuview;
+    render();
+    return;
+  }
+
+  // tab switch (option B)
+  const tabBtn = e.target.closest('[data-tab]');
+  if (tabBtn) {
+    state.tab = tabBtn.dataset.tab;
+    render();
+    return;
+  }
+
+  // click table row -> filter to that SKU (or clear)
+  const tableRow = e.target.closest('tbody tr[data-sku]');
+  if (tableRow) {
+    const code = tableRow.dataset.sku;
+    state.selectedSkuCode = state.selectedSkuCode === code ? null : code;
+    render();
+    return;
+  }
+
+  // sort column
+  const sortTh = e.target.closest('[data-sort]');
+  if (sortTh) {
+    const key = sortTh.dataset.sort;
+    if (state.sortKey === key) {
+      state.sortDir = state.sortDir === 'asc' ? 'desc' : 'asc';
+    } else {
+      state.sortKey = key;
+      state.sortDir = key === 'name' ? 'asc' : 'desc';
+    }
+    render();
+    return;
+  }
+
+});
+
+document.addEventListener('input', (e) => {
+  if (e.target.matches && e.target.matches('[data-action="sku-search-input"]')) {
+    state.skuSearch = e.target.value;
+    render();
+  }
+});
+
+document.addEventListener('change', (e) => {
+  if (e.target.matches && e.target.matches('[data-action="toggle-sr"]')) {
+    state.includeSR = e.target.checked;
+    render();
+  }
+});
+
+// initial render
+render();
+</script>
+
+</body>
+</html>
